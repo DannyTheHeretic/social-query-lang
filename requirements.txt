@@ -20,3 +20,5 @@ ruff==0.12.8
     # via sql-bsky (pyproject.toml:dev)
 virtualenv==20.33.1
     # via pre-commit
+
+atproto~=0.0.61
