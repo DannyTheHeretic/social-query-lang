@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from enum import Enum, auto
 
 
+# tokenizer:
 @dataclass
 class Token:
     """A token produced by tokenization."""
@@ -29,7 +30,6 @@ class TokenKind(Enum):
     # structure
     COMMA = auto()
     STAR = auto()
-    EOF = auto()
     ERROR = auto()
 
 
@@ -68,7 +68,6 @@ def tokenize(query: string) -> list[Token]:
         char = cursor.next()
 
         if char == "":
-            result.append(Token(TokenKind.EOF, "", idx, idx))
             break
 
         if char in string.ascii_letters:
@@ -111,7 +110,7 @@ def tokenize(query: string) -> list[Token]:
 
 def check_tok(before: str, after: TokenKind) -> None:
     """Test helper which checks a string tokenizes to a single given token kind."""
-    assert [tok.kind for tok in tokenize(before)] == [after, TokenKind.EOF]
+    assert [tok.kind for tok in tokenize(before)] == [after]
 
 
 def stringify_tokens(query: str) -> str:
@@ -133,7 +132,7 @@ def stringify_tokens(query: str) -> str:
         result += c
 
     i += 1
-    for tok in tokens[:-1]:  # don't print EOF
+    for tok in tokens:
         if tok.end_pos == i:
             result += "<"
 
@@ -142,7 +141,7 @@ def stringify_tokens(query: str) -> str:
 
 def test_simple_tokens() -> None:
     """Tests that various things tokenize correct in minimal cases."""
-    assert [tok.kind for tok in tokenize("")] == [TokenKind.EOF]
+    assert [tok.kind for tok in tokenize("")] == []
     check_tok("SELECT", TokenKind.SELECT)
     check_tok("FROM", TokenKind.FROM)
     check_tok("'hello :)'", TokenKind.STRING)

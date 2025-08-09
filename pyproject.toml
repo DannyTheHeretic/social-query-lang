@@ -47,6 +47,8 @@ ignore = [
     "FIX",
     # Function complexity.
     "C901",
+    # Conflicts with ruff format.
+    "COM812",
     # TODO: set up proper testing structure
     "S101",
 ]
