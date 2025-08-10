@@ -32,9 +32,7 @@
                   placeholder="SELECT username, message, likes FROM posts WHERE likes > 10"
                 ></textarea>
                 <div class="button-row">
-                  <button class="btn" id="execute-btn" onclick="send_back()">
-                    EXECUTE
-                  </button>
+                  <button class="btn" id="execute-btn">EXECUTE</button>
                   <button class="btn btn-danger" id="cancel-btn">CANCEL</button>
                   <button class="btn" id="clear-btn">CLEAR</button>
                 </div>
@@ -49,10 +47,10 @@
               <div class="table-area" id="table-container">
                 <table class="data-table" id="results-table">
                   <thead id="table-head">
-                    <!-- headers will be provided by backend -->
+                    <!-- headers will be provided by pyodide -->
                   </thead>
                   <tbody id="table-body">
-                    <!-- data rows will be provited by backend -->
+                    <!-- data rows will be provided by pyodide -->
                     <tr>
                       <td
                         colspan="8"
@@ -87,48 +85,141 @@
     <script src="boot.js"></script>
     <script src="frontend.js"></script>
     <script type="text/javascript">
+      const SHOW_BOOT = true; // false to skip boot sequence
+      let pyodide;
+      let pkg;
 
-    const SHOW_BOOT = true; // false to skip boot sequence
-    let pyodide;
-
-      function send_back() {
+      function executeQuery() {
+        if (!pkg) {
+          window.updateStatus("Python backend not ready", "error");
+          return;
+        }
+        
         let sql_data = document.getElementById("query-input").value;
-        console.log(sql_data);
+        console.log("Executing query:", sql_data);
 
-        let data = pkg.parse_input(sql_data);
-        pkg.get_user_data(data);
+        try {
+          let data = pkg.parse_input(sql_data);
+          pkg.get_user_data(data);
+          window.updateStatus("Query executed", "success");
+        } catch (error) {
+          console.error("Query execution error:", error);
+          window.updateStatus("Query failed: " + error.message, "error");
+        }
       }
 
       async function main() {
-  if (SHOW_BOOT) {
-    await window.startBootSequence();
-  }
         try {
-          pyodide = await loadPyodide();
-          console.log("pyodide loaded");
+          if (SHOW_BOOT) {
+            await window.bootProgress.start();
+          }
+          console.log("Starting pyodide load...");
 
+          // load pyodide with progress updates
+          const loadPromise = loadPyodide();
+          if (SHOW_BOOT) {
+            const progressInterval = setInterval(() => {
+              // random progress updates while loading
+              const randomProgress = Math.random() * 10 + 5;
+              window.bootProgress.updateProgress(randomProgress);
+            }, 200);
+
+            pyodide = await loadPromise;
+            clearInterval(progressInterval);
+          } else {
+            pyodide = await loadPromise;
+          }
+          
+          console.log("Pyodide loaded successfully");
+
+          if (SHOW_BOOT) {
+            window.bootProgress.pyodideLoaded();
+          }
+
+          console.log("Loading setup script...");
+          if (SHOW_BOOT) {
+            window.bootProgress.updateProgress(20);
+          }
+          
           await pyodide.runPythonAsync(`
             from pyodide.http import pyfetch
             response = await pyfetch("./setup.py")
             with open("setup.py", "wb") as f:
                 f.write(await response.bytes())
-        `);
+          `);
+          
+          if (SHOW_BOOT) {
+            window.bootProgress.updateProgress(70);
+          }
 
-          setup = pyodide.pyimport("setup");
+          if (SHOW_BOOT) {
+            window.bootProgress.setupLoaded();
+          }
+
+          // execute setup to load all python modules
+          console.log("Setting up python modules...");
+          if (SHOW_BOOT) {
+            window.bootProgress.updateProgress(30);
+          }
+          
+          const setup = pyodide.pyimport("setup");
           await setup.setup_pyodide_scripts();
+          
+          if (SHOW_BOOT) {
+            window.bootProgress.updateProgress(80);
+          }
+
+          if (SHOW_BOOT) {
+            window.bootProgress.modulesLoaded();
+          }
+
+          console.log("Loading functions module...");
+          if (SHOW_BOOT) {
+            window.bootProgress.updateProgress(15);
+          }
+
+          await new Promise(resolve => setTimeout(resolve, 300));
+          
+          if (SHOW_BOOT) {
+            window.bootProgress.updateProgress(50);
+          }
+          
           pkg = pyodide.pyimport("functions");
+          
+          if (SHOW_BOOT) {
+            window.bootProgress.updateProgress(85);
+          }
 
-          console.log("python environment ready");
-          window.finishBoot();
+          await new Promise(resolve => setTimeout(resolve, 200));
 
-          window.updateStatus("python backend loaded", "success");
+          if (SHOW_BOOT) {
+            window.bootProgress.functionsLoaded();
+          }
+          console.log("Python environment ready");
+          document.getElementById('execute-btn').addEventListener('click', executeQuery);
+
+          if (SHOW_BOOT) {
+            window.bootProgress.complete();
+          }
+
+          window.updateStatus("Python backend loaded", "success");
           window.updateConnectionInfo(0, "pyodide ready");
-        } catch (error) {
-          console.error("failed to load pyodide:", error);
 
-          window.finishBoot();
-          window.updateStatus("python backend failed - fallback mode", "error");
+        } catch (error) {
+          console.error("Failed to load pyodide:", error);
+
+          if (SHOW_BOOT) {
+            window.bootProgress.complete();
+          }
+
+          // update UI with error state
+          window.updateStatus("Python backend failed - fallback mode", "error");
           window.updateConnectionInfo(0, "javascript fallback");
+
+          // setup fallback functionality
+          document.getElementById('execute-btn').addEventListener('click', () => {
+            window.updateStatus("Python backend not available", "error");
+          });
         }
       }
 
