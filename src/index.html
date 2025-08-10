@@ -94,7 +94,7 @@
           window.updateStatus("Python backend not ready", "error");
           return;
         }
-        
+
         let sql_data = document.getElementById("query-input").value;
         console.log("Executing query:", sql_data);
 
@@ -129,7 +129,7 @@
           } else {
             pyodide = await loadPromise;
           }
-          
+
           console.log("Pyodide loaded successfully");
 
           if (SHOW_BOOT) {
@@ -140,14 +140,14 @@
           if (SHOW_BOOT) {
             window.bootProgress.updateProgress(20);
           }
-          
+
           await pyodide.runPythonAsync(`
             from pyodide.http import pyfetch
             response = await pyfetch("./setup.py")
             with open("setup.py", "wb") as f:
                 f.write(await response.bytes())
           `);
-          
+
           if (SHOW_BOOT) {
             window.bootProgress.updateProgress(70);
           }
@@ -161,10 +161,10 @@
           if (SHOW_BOOT) {
             window.bootProgress.updateProgress(30);
           }
-          
+
           const setup = pyodide.pyimport("setup");
           await setup.setup_pyodide_scripts();
-          
+
           if (SHOW_BOOT) {
             window.bootProgress.updateProgress(80);
           }
@@ -179,13 +179,13 @@
           }
 
           await new Promise(resolve => setTimeout(resolve, 300));
-          
+
           if (SHOW_BOOT) {
             window.bootProgress.updateProgress(50);
           }
-          
+
           pkg = pyodide.pyimport("functions");
-          
+
           if (SHOW_BOOT) {
             window.bootProgress.updateProgress(85);
           }

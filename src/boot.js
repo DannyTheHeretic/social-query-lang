@@ -39,12 +39,12 @@ let progressCallbacks = {};
 window.bootProgress = {
   start: startBootSequence,
   pyodideLoaded: () => advanceToStage("setup_load"),
-  setupLoaded: () => advanceToStage("modules_load"), 
+  setupLoaded: () => advanceToStage("modules_load"),
   modulesLoaded: () => advanceToStage("functions_load"),
   functionsLoaded: () => advanceToStage("db_init"),
   complete: finishBoot,
   isComplete: () => isBootComplete,
-  
+
   updateProgress: updateCurrentProgress,
   setProgressMessage: setProgressMessage
 };
@@ -60,7 +60,7 @@ function updateCurrentProgress(percentage) {
       clearInterval(progressCallbacks[barId]);
       delete progressCallbacks[barId];
     }
-    
+
     lastBar.style.width = Math.min(85, Math.max(0, percentage)) + "%";
   }
 }
@@ -92,7 +92,7 @@ async function startBootSequence() {
 
   // start showing messages up to first callback point
   await showMessagesUpToStage("pyodide_load");
-  
+
   console.log("Boot sequence waiting for pyodide load...");
 }
 
@@ -105,7 +105,7 @@ async function showMessagesUpToStage(targetStage) {
     }
 
     const message = bootMessages[currentMessageIndex];
-    
+
     // stop if we hit a callback stage that doesn't match the target
     if (message.waitForCallback && message.stage !== targetStage) {
       break;
@@ -123,10 +123,10 @@ async function showMessagesUpToStage(targetStage) {
 
 async function advanceToStage(targetStage) {
   console.log(`Advancing boot to stage: ${targetStage}`);
-  
+
   // complete current progress bar smoothly if there is one
   await completeCurrentProgressBar();
-  
+
   // continue to next stage
   currentMessageIndex++;
   await showMessagesUpToStage(targetStage);
@@ -143,12 +143,12 @@ function completeCurrentProgressBar() {
     let completed = 0;
     currentProgressBars.forEach(bar => {
       const barId = bar.id;
-      
+
       if (progressCallbacks[barId]) {
         clearInterval(progressCallbacks[barId]);
         delete progressCallbacks[barId];
       }
-      
+
       const currentWidth = parseFloat(bar.style.width) || 0;
 
       if (currentWidth >= 100) {
@@ -158,7 +158,7 @@ function completeCurrentProgressBar() {
         }
         return;
       }
-      
+
       const interval = setInterval(() => {
         const width = parseFloat(bar.style.width) || 0;
         if (width >= 100) {
@@ -181,8 +181,8 @@ async function showMessage(message, index) {
   line.className = "boot-line";
 
   if (message.showProgress) {
-    line.innerHTML = message.text + 
-      '<div class="boot-progress"><div class="boot-progress-bar" id="progress-bar-' + 
+    line.innerHTML = message.text +
+      '<div class="boot-progress"><div class="boot-progress-bar" id="progress-bar-' +
       index + '"></div></div>';
   } else {
     line.textContent = message.text;
@@ -216,7 +216,7 @@ function startProgressBar(barId) {
   // start at 0% and slowly increase until callback
   let progress = 0;
   progressBar.style.width = progress + "%";
-  
+
   const interval = setInterval(() => {
     if (continuePressed) {
       progress = 100;
@@ -281,12 +281,12 @@ async function finishBoot() {
 
   // complete any remaining progress bars
   completeCurrentProgressBar();
-  
+
   // show remaining messages
   currentMessageIndex++;
   await showMessagesUpToStage("complete");
   await waitForContinue();
-  
+
   if (bootScreen) {
     bootScreen.style.opacity = "0";
     bootScreen.style.transition = "opacity 0.5s ease";
