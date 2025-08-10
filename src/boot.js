@@ -33,7 +33,7 @@ let continuePressed = false;
 
 window.startBootSequence = async function () {
   continuePressed = false;
-  
+
   bootScreen = document.createElement("div");
   bootScreen.className = "boot-screen";
   bootScreen.innerHTML = '<div class="boot-content" id="boot-content"></div>';
@@ -138,7 +138,7 @@ function animateProgressBar(barId) {
         resolve();
         return;
       }
-      
+
       progress += Math.random() * 15;
       if (progress >= 100) {
         progress = 100;
@@ -156,17 +156,17 @@ function waitForContinue() {
       e.preventDefault();
       e.stopPropagation();
       continuePressed = true;
-      
+
       document.removeEventListener("keydown", handleInteraction, true);
       document.removeEventListener("click", handleInteraction, true);
       bootScreen.removeEventListener("click", handleInteraction, true);
-      
+
       resolve();
     };
 
     document.addEventListener("keydown", handleInteraction, true);
     document.addEventListener("click", handleInteraction, true);
-    
+
     if (bootScreen) {
       bootScreen.addEventListener("click", handleInteraction, true);
     }
@@ -174,13 +174,13 @@ function waitForContinue() {
     const timeoutId = setTimeout(() => {
       if (!continuePressed) {
         continuePressed = true;
-        
+
         document.removeEventListener("keydown", handleInteraction, true);
         document.removeEventListener("click", handleInteraction, true);
         if (bootScreen) {
           bootScreen.removeEventListener("click", handleInteraction, true);
         }
-        
+
         resolve();
       }
     }, 3000);
