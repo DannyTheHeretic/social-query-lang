@@ -49,6 +49,6 @@ ignore = [
     "C901",
     # Conflicts with ruff format.
     "COM812",
-    # TODO: set up proper testing structure
+    # Asserts are good, actually.
     "S101",
 ]
