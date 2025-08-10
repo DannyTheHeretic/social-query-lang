@@ -25,14 +25,16 @@ class TokenKind(Enum):
     # keywords
     SELECT = auto()
     FROM = auto()
+    WHERE = auto()
 
     # literals
     STRING = auto()
     IDENTIFIER = auto()
+    STAR = auto()
+    EQUALS = auto()
 
     # structure
     COMMA = auto()
-    STAR = auto()
     ERROR = auto()
     EOF = auto()  # this is a fake token only made and used in the parser
 
@@ -40,6 +42,7 @@ class TokenKind(Enum):
 KEYWORDS = {
     "SELECT": TokenKind.SELECT,
     "FROM": TokenKind.FROM,
+    "WHERE": TokenKind.WHERE,
 }
 
 
@@ -108,6 +111,9 @@ def tokenize(query: string) -> list[Token]:
             kind = TokenKind.STRING if string_result.endswith("'") and len(string_result) > 1 else TokenKind.ERROR
             result.append(Token(kind, string_result, idx, cursor.index + 1))
 
+        elif char == "=":
+            result.append(Token(TokenKind.EQUALS, "=", idx, cursor.index))
+
     return result
 
 
@@ -126,11 +132,11 @@ class Parser:
         """Check whether the token stream is done."""
         return self.index == len(self.contents)
 
-    def peek(self) -> Token:
-        """Look at the next token in the stream."""
+    def peek(self) -> TokenKind:
+        """Look at the next kind of token in the stream."""
         if self.eof():
-            return Token(TokenKind.EOF, "", -1, -1)
-        return self.contents[self.index]
+            return TokenKind.EOF
+        return self.contents[self.index].kind
 
     def advance(self) -> None:
         """Move to the next token in the stream."""
@@ -152,10 +158,16 @@ class Parser:
         self.events.append(("OPEN", ParentKind.ERROR_TREE))
         return result
 
-    def close(self, kind: ParentKind, where: int) -> None:
+    def open_before(self, index: int) -> int:
+        """Start nesting children before a given point."""
+        self.events.insert(index, ("OPEN", ParentKind.ERROR_TREE))
+        return index
+
+    def close(self, kind: ParentKind, where: int) -> int:
         """Stop nesting children and note the tree type."""
         self.events[where] = ("OPEN", kind)
         self.events.append("CLOSE")
+        return where
 
     def expect(self, kind: TokenKind, error: str) -> None:
         """Ensure the next token is a specific kind and advance."""
@@ -166,7 +178,7 @@ class Parser:
 
     def at(self, kind: TokenKind) -> None:
         """Check if the next token is a specific kind."""
-        return self.peek().kind == kind
+        return self.peek() == kind
 
 
 @dataclass
@@ -185,7 +197,10 @@ class ParentKind(Enum):
     ERROR_TREE = auto()
     FIELD_LIST = auto()
     FROM_CLAUSE = auto()
+    WHERE_CLAUSE = auto()
     EXPR_NAME = auto()
+    EXPR_STRING = auto()
+    EXPR_BINARY = auto()
     FILE = auto()
 
 
@@ -242,7 +257,7 @@ def _parse_stmt(parser: Parser) -> None:
 
 
 def _parse_select_stmt(parser: Parser) -> None:
-    # 'SELECT' <field> [ ',' <field> ]* [ 'FROM' IDENTIFIER ]
+    # 'SELECT' <field> [ ',' <field> ]* [ 'FROM' IDENTIFIER ] [ 'WHERE' <expr> ]
     start = parser.open()
     parser.expect(TokenKind.SELECT, "only SELECT is supported")
 
@@ -261,6 +276,14 @@ def _parse_select_stmt(parser: Parser) -> None:
         parser.expect(TokenKind.IDENTIFIER, "expected to select from a table")
         parser.close(ParentKind.FROM_CLAUSE, from_start)
 
+    if parser.at(TokenKind.WHERE):
+        # where clause
+        where_start = parser.open()
+        parser.advance()
+
+        _parse_expr(parser)
+        parser.close(ParentKind.WHERE_CLAUSE, where_start)
+
     parser.close(ParentKind.SELECT_STMT, start)
 
 
@@ -273,15 +296,63 @@ def _parse_field(parser: Parser) -> None:
 
 
 def _parse_expr(parser: Parser) -> None:
-    # <small expr>
-    _parse_small_expr(parser)
+    # <small expr> | <small expr> = <small expr>
+    _parse_expr_inner(parser, TokenKind.EOF)
 
 
-def _parse_small_expr(parser: Parser) -> None:
+def _parse_expr_inner(parser: Parser, left_op: TokenKind) -> None:
+    left = _parse_small_expr(parser)
+
+    while True:
+        right_op = parser.peek()
+        if right_goes_first(left_op, right_op):
+            # if we have A <left_op> B <right_op> C ...,
+            # then we need to parse (A <left_op> (B <right_op> C ...))
+            outer = parser.open_before(left)
+            parser.advance()
+            _parse_expr_inner(parser, right_op)  # (B <right_op> C ...)
+            parser.close(ParentKind.EXPR_BINARY, outer)
+        else:
+            # (A <left_op> B) <right_op> C will be handled
+            # (if this were toplevel, right_goes_first will happen)
+            break
+
+
+def _parse_small_expr(parser: Parser) -> int:
     # IDENTIFIER
     start = parser.open()
-    parser.expect(TokenKind.IDENTIFIER, "expected an expression")
-    parser.close(ParentKind.EXPR_NAME, start)
+    if parser.at(TokenKind.IDENTIFIER):
+        parser.advance()
+        return parser.close(ParentKind.EXPR_NAME, start)
+    if parser.at(TokenKind.STRING):
+        parser.advance()
+        return parser.close(ParentKind.EXPR_STRING, start)
+    parser.advance_with_error("expected expression")
+    return parser.close(ParentKind.ERROR_TREE, start)
+
+
+TABLE = [[TokenKind.EQUALS]]
+
+
+def right_goes_first(left: TokenKind, right: TokenKind) -> bool:
+    """Understand which token type binds tighter.
+
+    We say that A <left> B <right> C is equivalent to:
+     - A <left> (B <right> C) if we return True
+     - (A <left> B) <right> C if we return False
+    """
+    left_idx = next((i for i, r in enumerate(TABLE) if left in r), None)
+    right_idx = next((i for i, r in enumerate(TABLE) if right in r), None)
+
+    if right_idx is None:
+        # evaluate left-to-right
+        return False
+    if left_idx is None:
+        # well, maybe left doesn't exist?
+        assert left == TokenKind.EOF
+        return True
+
+    return right_idx > left_idx
 
 
 ##### tests: (this should be moved to a proper tests folder)
@@ -321,10 +392,10 @@ def stringify_tokens(query: str) -> str:
 def _stringify_tree(tree: Tree) -> list[str]:
     result = []
     if isinstance(tree, Parent):
-        result.append(f"{tree.kind}")
+        result.append(f"{tree.kind.name}")
         result.extend("    " + line for child in tree.children for line in _stringify_tree(child))
     else:
-        repr = f'{tree.kind} ("{tree.text}")'
+        repr = f'{tree.kind.name} ("{tree.text}")'
         if tree.errors:
             repr += " -- "
             repr += " / ".join(tree.errors)
@@ -363,14 +434,33 @@ def test_parse_simple() -> None:
     assert (
         stringify_tree(parse(tokenize("SELECT * FROM posts")))
         == textwrap.dedent("""
-    ParentKind.FILE
-        ParentKind.SELECT_STMT
-            TokenKind.SELECT ("SELECT")
-            ParentKind.FIELD_LIST
-                TokenKind.STAR ("*")
-            ParentKind.FROM_CLAUSE
-                TokenKind.FROM ("FROM")
-                TokenKind.IDENTIFIER ("posts")
+        FILE
+            SELECT_STMT
+                SELECT ("SELECT")
+                FIELD_LIST
+                    STAR ("*")
+                FROM_CLAUSE
+                    FROM ("FROM")
+                    IDENTIFIER ("posts")
+    """).strip()
+    )
+
+    assert (
+        stringify_tree(parse(tokenize("SELECT * WHERE actor = 'aaa'")))
+        == textwrap.dedent("""
+        FILE
+            SELECT_STMT
+                SELECT ("SELECT")
+                FIELD_LIST
+                    STAR ("*")
+                WHERE_CLAUSE
+                    WHERE ("WHERE")
+                    EXPR_BINARY
+                        EXPR_NAME
+                            IDENTIFIER ("actor")
+                        EQUALS ("=")
+                        EXPR_STRING
+                            STRING ("'aaa'")
     """).strip()
     )
 
