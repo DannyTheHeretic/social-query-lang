@@ -11,6 +11,7 @@ class Session:
         self.password = password
         self.pds_host = "https://bsky.social"
         # Instance client
+        self.client = requests.Session()
         # Access token
         self.access_jwt = None
         # Refresh token
@@ -19,7 +20,7 @@ class Session:
     def login(self) -> None:
         """Create an authenticated session and save tokens."""
         endpoint = f"{self.pds_host}/xrpc/com.atproto.server.createSession"
-        session_info = requests.post(
+        session_info = self.client.post(
             endpoint,
             headers={"Content-Type": "application/json"},
             json={
@@ -30,6 +31,13 @@ class Session:
         ).json()
         self.access_jwt = session_info["accessJwt"]
         self.refresh_jwt = session_info["refreshJwt"]
+        self.client.headers.update(
+            {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {self.access_jwt}",
+            },
+        )
+
         print("Connexion réussie.")
         print("Access token :", self.access_jwt)
         print("Refresh token :", self.refresh_jwt)
@@ -37,16 +45,29 @@ class Session:
     def get_profile(self) -> dict:
         """Get a user profile."""
         endpoint = f"{self.pds_host}/xrpc/app.bsky.actor.getProfile?actor={self.username}"
-        return requests.get(
+        return self.client.get(
             endpoint,
-            headers={"Content-Type": "application/json", "Authorization": f"Bearer {self.access_jwt}"},
-            timeout=30,
+        ).json()
+
+    def search(self, query: str) -> dict:
+        """Search Bluesky."""
+        endpoint = f"{self.pds_host}/xrpc/app.bsky.actor.searchActors?q={query}"
+        return self.client.get(
+            endpoint,
+        ).json()
+
+    def get_author_feed(self, actor: str) -> dict:
+        """Get a specific user feed."""
+        endpoint = f"{self.pds_host}/xrpc/app.bsky.feed.getAuthorFeed?actor={actor}"
+        print(endpoint)
+        return self.client.get(
+            endpoint,
         ).json()
 
 
 if __name__ == "__main__":
     USERNAME = "Nothing_AHAHA"
-    PASSWORD = "You thought i'll write the password here you fool"  # noqa: S105
+    PASSWORD = "You tought i'll write the password here you fool"  # noqa: S105
 
     session = Session(USERNAME, PASSWORD)
     session.login()
@@ -54,3 +75,6 @@ if __name__ == "__main__":
     profile = session.get_profile()
 
     print(profile)
+
+    search = session.get_actor_feeds("tess.bsky.social")
+    print(search)
