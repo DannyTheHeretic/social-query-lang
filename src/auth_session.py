@@ -83,21 +83,20 @@ class BskySession:
         response = await self.client.get(
             endpoint,
         )
-        val = await response.json()
-        print(val)
-        return val
+        return await response.json()
 
-    def search(self, query: str) -> dict:
+    async def search(self, query: str) -> dict:
         """Search Bluesky."""
         endpoint = f"{self.pds_host}/xrpc/app.bsky.actor.searchActors?q={query}"
-        return self.client.get(
+        response = await self.client.get(
             endpoint,
-        ).json()
+        )
+        return await response.json()
 
-    def get_author_feed(self, actor: str) -> dict:
+    async def get_author_feed(self, actor: str) -> dict:
         """Get a specific user feed."""
         endpoint = f"{self.pds_host}/xrpc/app.bsky.feed.getAuthorFeed?actor={actor}"
-        print(endpoint)
-        return self.client.get(
+        response = await self.client.get(
             endpoint,
-        ).json()
+        )
+        return await response.json()
