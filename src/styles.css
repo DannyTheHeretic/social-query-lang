@@ -1,6 +1,9 @@
 /* fonts */
 @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap");
 
+/* Thanks to this article on the CRT effect: https://aleclownes.com/2017/02/01/crt-display.html */
+/* Read for reference on the values used */ 
+
 @keyframes flicker {
   0% {
   opacity: 0.27861;
