@@ -65,7 +65,7 @@ class Cursor:
         return c
 
 
-def tokenize(query: string) -> list[Token]:
+def tokenize(query: str) -> list[Token]:
     """Turn a query into a list of tokens."""
     result = []
 
@@ -107,9 +107,9 @@ def tokenize(query: string) -> list[Token]:
 
             cursor.next()  # get the last '
 
-            string_result = cursor.contents[idx : cursor.index + 1]
+            string_result = cursor.contents[idx : cursor.index]
             kind = TokenKind.STRING if string_result.endswith("'") and len(string_result) > 1 else TokenKind.ERROR
-            result.append(Token(kind, string_result, idx, cursor.index + 1))
+            result.append(Token(kind, string_result, idx, cursor.index))
 
         elif char == "=":
             result.append(Token(TokenKind.EQUALS, "=", idx, cursor.index))
