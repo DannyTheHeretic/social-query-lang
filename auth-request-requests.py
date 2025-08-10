@@ -2,40 +2,40 @@
 import requests  # The system we will actually use
 
 
-
 class Session:
-    """Class to etablish an auth session"""
-    def __init__(self, username: str, password: str):
-        #Bluesky credentials
+    """Class to etablish an auth session."""
+
+    def __init__(self, username: str, password: str) -> None:
+        # Bluesky credentials
         self.username = username
         self.password = password
         self.pds_host = "https://bsky.social"
-        #Instance client
-        #Access token
+        # Instance client
+        # Access token
         self.access_jwt = None
-        #Refresh token
+        # Refresh token
         self.refresh_jwt = None
 
-    def login(self):
+    def login(self) -> None:
         """Create an authenticated session and save tokens."""
         endpoint = f"{self.pds_host}/xrpc/com.atproto.server.createSession"
         session_info = requests.post(
-                endpoint,
-                headers={"Content-Type": "application/json"},
-                json = {
-                    "identifier":self.username,
-                    "password":self.password,
-                },
-                timeout=30,
-            ).json()
+            endpoint,
+            headers={"Content-Type": "application/json"},
+            json={
+                "identifier": self.username,
+                "password": self.password,
+            },
+            timeout=30,
+        ).json()
         self.access_jwt = session_info["accessJwt"]
         self.refresh_jwt = session_info["refreshJwt"]
         print("Connexion réussie.")
         print("Access token :", self.access_jwt)
         print("Refresh token :", self.refresh_jwt)
 
-    def get_profile(self):
-        """Example : get user profile"""
+    def get_profile(self) -> dict:
+        """Get a user profile."""
         endpoint = f"{self.pds_host}/xrpc/app.bsky.actor.getProfile?actor={self.username}"
         return requests.get(
             endpoint,
@@ -46,7 +46,7 @@ class Session:
 
 if __name__ == "__main__":
     USERNAME = "Nothing_AHAHA"
-    PASSWORD = "You thought i'll write the password here you fool"
+    PASSWORD = "You thought i'll write the password here you fool"  # noqa: S105
 
     session = Session(USERNAME, PASSWORD)
     session.login()
