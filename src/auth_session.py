@@ -7,11 +7,11 @@ from pyodide.http import FetchResponse, pyfetch  # The system we will actually u
 class PyfetchSession:
     """Pyfetch Session, emulating the request Session."""
 
-    def __init__(self, headers: dict|None=None) -> None:
+    def __init__(self, headers: dict | None = None) -> None:
         """Pyfetch Session, emulating the request Session."""
         self.default_headers = headers or {}
 
-    async def get(self, url: str, headers:dict|None=None) -> FetchResponse:
+    async def get(self, url: str, headers: dict | None = None) -> FetchResponse:
         """Get request for the pyfetch."""
         merged_headers = self.default_headers.copy()
         if headers:
@@ -22,7 +22,13 @@ class PyfetchSession:
             headers=merged_headers,
         )
 
-    async def post(self, url:str, obj:dict|None="", data:dict|None=None, headers=None) -> FetchResponse:
+    async def post(
+        self,
+        url: str,
+        obj: dict | None = "",
+        data: dict | None = None,
+        headers: dict | None = None,
+    ) -> FetchResponse:
         """Post request."""
         merged_headers = self.default_headers.copy()
         if headers:
@@ -95,4 +101,3 @@ class BskySession:
         return self.client.get(
             endpoint,
         ).json()
-
