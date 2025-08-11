@@ -80,7 +80,7 @@ def tokenize(query: str) -> list[Token]:
         if char in string.ascii_letters:
             char = cursor.peek()
 
-            while char in string.ascii_letters + ".":
+            while char in string.ascii_letters + "._":
                 cursor.next()
                 char = cursor.peek()
                 if char == "":
@@ -422,6 +422,7 @@ def test_simple_tokens() -> None:
     check_tok(",", TokenKind.COMMA)
     check_tok("*", TokenKind.STAR)
     check_tok("username", TokenKind.IDENTIFIER)
+    check_tok("username_b", TokenKind.IDENTIFIER)
 
 
 def test_tokenize_simple_select() -> None:
