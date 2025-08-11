@@ -79,7 +79,7 @@ def update_connection_info(row: int, status: str) -> None:
     CONNECTION_INFO.textContent = f"rows: {row} | status: {status}"
 
 
-def clear_interface(*args) -> None:
+def clear_interface() -> None:
     """Clear the user interface."""
     clear_query_input()
     show_empty_table()
@@ -106,6 +106,57 @@ def trigger_electric_wave() -> None:
     set_timeout(create_proxy(_activate), 50)
 
 
+def _create_table_headers(headers: list) -> None:
+    """Create table headers with staggered animation."""
+    header_row = document.createElement("tr")
+    for index, header in enumerate(headers):
+        th = document.createElement("th")
+        th.textContent = header.upper()
+        th.style.opacity = "0"
+        header_row.appendChild(th)
+
+        # staggered header animation
+        def _show_header(element: Element = th, delay: int = index * 50) -> None:
+            def _animate() -> None:
+                element.style.transition = "opacity 0.3s ease"
+                element.style.opacity = "1"
+
+            set_timeout(create_proxy(_animate), delay)
+
+        _show_header()
+
+    TABLE_HEAD.appendChild(header_row)
+
+
+def _create_table_rows(headers: list, rows: list) -> None:
+    """Create table rows with appearing effect."""
+    for row_index, row_data in enumerate(rows):
+        tr = document.createElement("tr")
+        tr.style.opacity = "0"
+
+        if isinstance(row_data, list):
+            cell_values = row_data
+        else:
+            cell_values = [str(getattr(row_data, header, "")) for header in headers]
+
+        for cell_data in cell_values:
+            td = document.createElement("td")
+            td.textContent = str(cell_data) if cell_data else ""
+            tr.appendChild(td)
+
+        TABLE_BODY.appendChild(tr)
+
+        # staggered row animation
+        def _show_row(element: Element = tr, delay: int = (row_index * 100) + 200) -> None:
+            def _animate() -> None:
+                element.style.transition = "opacity 0.4s ease"
+                element.style.opacity = "1"
+
+            set_timeout(create_proxy(_animate), delay)
+
+        _show_row()
+
+
 def update_table(headers: list, rows: list) -> None:
     """Populate table with data and appearing effects."""
     # fade out effect before updating
@@ -121,52 +172,8 @@ def update_table(headers: list, rows: list) -> None:
             show_empty_table()
             return
 
-        # create headers with staggered animation
-        header_row = document.createElement("tr")
-        for index, header in enumerate(headers):
-            th = document.createElement("th")
-            th.textContent = header.upper()
-            th.style.opacity = "0"
-            header_row.appendChild(th)
-
-            # staggered header animation
-            def _show_header(element: Element = th, delay: int = index * 50) -> None:
-                def _animate() -> None:
-                    element.style.transition = "opacity 0.3s ease"
-                    element.style.opacity = "1"
-
-                set_timeout(create_proxy(_animate), delay)
-
-            _show_header()
-
-        TABLE_HEAD.appendChild(header_row)
-
-        # create rows with appearing effect
-        for row_index, row_data in enumerate(rows):
-            tr = document.createElement("tr")
-            tr.style.opacity = "0"
-
-            if isinstance(row_data, list):
-                cell_values = row_data
-            else:
-                cell_values = [str(getattr(row_data, header, "")) for header in headers]
-
-            for cell_data in cell_values:
-                td = document.createElement("td")
-                td.textContent = str(cell_data) if cell_data else ""
-                tr.appendChild(td)
-
-            TABLE_BODY.appendChild(tr)
-
-            # staggered row animation
-            def _show_row(element: Element = tr, delay: int = (row_index * 100) + 200) -> None:
-                def _animate() -> None:
-                    element.style.transition = "opacity 0.4s ease"
-                    element.style.opacity = "1"
-
-                set_timeout(create_proxy(_animate), delay)
-
-            _show_row()
+        _create_table_headers(headers)
+        _create_table_rows(headers, rows)
 
         # restore container opacity
         def _restore_opacity() -> None:
