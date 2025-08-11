@@ -89,25 +89,6 @@
       let pyodide;
       let pkg;
 
-      function executeQuery() {
-        if (!pkg) {
-          window.updateStatus("Python backend not ready", "error");
-          return;
-        }
-
-        let sql_data = document.getElementById("query-input").value;
-        console.log("Executing query:", sql_data);
-
-        try {
-          let data = pkg.parse_input(sql_data);
-          pkg.get_user_data(data);
-          window.updateStatus("Query executed", "success");
-        } catch (error) {
-          console.error("Query execution error:", error);
-          window.updateStatus("Query failed: " + error.message, "error");
-        }
-      }
-
       async function main() {
         try {
           if (SHOW_BOOT) {
@@ -196,7 +177,6 @@
             window.bootProgress.functionsLoaded();
           }
           console.log("Python environment ready");
-          document.getElementById('execute-btn').addEventListener('click', executeQuery);
 
           if (SHOW_BOOT) {
             window.bootProgress.complete();
