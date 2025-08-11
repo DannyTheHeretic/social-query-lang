@@ -1,11 +1,11 @@
 """The main script file for Pyodide."""
 
-from js import Event, document
-from parser import ParentKind, Token, TokenKind, Tree, parse, tokenize
+from js import Event, document  # noqa: I001
 from pyodide.ffi import create_proxy
 from pyodide.http import pyfetch
 
 from frontend import CLEAR_BUTTON, EXECUTE_BUTTON, clear_interface, update_table
+from parser import ParentKind, Token, TokenKind, Tree, parse, tokenize
 
 
 def flatten_response(data: dict) -> dict:
