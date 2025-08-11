@@ -135,7 +135,6 @@ def _create_table_rows(headers: list, rows: list[dict]) -> None:
         tr.style.opacity = "0"
 
         cell_values = [str(row_data.pop(header, "")) for header in headers]
-        print(cell_values)
         for cell_data in cell_values:
             td = document.createElement("td")
             td.textContent = str(cell_data) if cell_data else ""

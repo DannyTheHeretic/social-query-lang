@@ -16,8 +16,10 @@ def flatten_response(data: dict) -> dict:
             for field, value in current.items():
                 _flatten(value, name + field + "_")
         elif isinstance(current, list):
-            for idx, i in enumerate(current):
-                _flatten(i, name + str(idx) + "_")
+            """old code
+            # for idx, i in enumerate(current):
+            #     _flatten(i, name + str(idx) + "_")
+            """
         else:
             flattened_result[name[:-1]] = current  # Drops the extra _
 
@@ -43,7 +45,7 @@ async def get_user_data(user: dict) -> dict:
     body = []
 
     for i in val:
-        data = i["post"]
+        data = i
 
         d = flatten_response(data)
         body.append(d)
