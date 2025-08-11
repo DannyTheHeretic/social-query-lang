@@ -8,7 +8,9 @@ To get a web server up:
 
 To run `pre-commit` on everything: `pre-commit run -a`.
 
-To download all dependencies: `pip install -r requirements.txt`
+To download all dependencies: `pip install -r requirements.txt`.
+
+To run tests, use `pytest`. Currently, you will need to do `pytest src/parser.py`.
 
 ---
 
