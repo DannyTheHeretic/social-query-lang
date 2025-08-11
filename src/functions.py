@@ -78,9 +78,8 @@ def extract_fields(tree: Tree) -> list[Token] | None:
 async def parse_input(_: Event) -> None:
     """Start of the parser."""
     y = document.getElementById("query-input").value
-    tokens = parse(tokenize(y))
-    # TODO: Put SQL Parser in
-    await get_user_data(tokens)
+    tree: Tree = parse(tokenize(y))
+    await get_user_data(tree)
 
 
 async def get_user_data(tokens: Tree) -> dict:
