@@ -29,9 +29,15 @@ class TokenKind(Enum):
 
     # literals
     STRING = auto()
+    INTEGER = auto()
     IDENTIFIER = auto()
     STAR = auto()
+
+    # operators
     EQUALS = auto()
+    AND = auto()
+    GT = auto()
+    LT = auto()
 
     # structure
     COMMA = auto()
@@ -43,6 +49,7 @@ KEYWORDS = {
     "SELECT": TokenKind.SELECT,
     "FROM": TokenKind.FROM,
     "WHERE": TokenKind.WHERE,
+    "AND": TokenKind.AND,
 }
 
 
@@ -65,7 +72,7 @@ class Cursor:
         return c
 
 
-def tokenize(query: str) -> list[Token]:
+def tokenize(query: str) -> list[Token]:  # noqa: PLR0912, C901
     """Turn a query into a list of tokens."""
     result = []
 
@@ -90,6 +97,17 @@ def tokenize(query: str) -> list[Token]:
             kind = KEYWORDS.get(identifier, TokenKind.IDENTIFIER)
             result.append(Token(kind, identifier, idx, cursor.index))
 
+        elif char in string.digits:
+            char = cursor.peek()
+
+            while char in string.digits:
+                cursor.next()
+                char = cursor.peek()
+                if char == "":
+                    break
+
+            result.append(Token(TokenKind.INTEGER, cursor.contents[idx : cursor.index], idx, cursor.index))
+
         elif char == ",":
             result.append(Token(TokenKind.COMMA, ",", idx, cursor.index))
 
@@ -113,6 +131,13 @@ def tokenize(query: str) -> list[Token]:
 
         elif char == "=":
             result.append(Token(TokenKind.EQUALS, "=", idx, cursor.index))
+
+        elif char == ">":
+            # TODO: gte?
+            result.append(Token(TokenKind.GT, ">", idx, cursor.index))
+
+        elif char == "<":
+            result.append(Token(TokenKind.LT, "<", idx, cursor.index))
 
     return result
 
@@ -200,6 +225,7 @@ class ParentKind(Enum):
     WHERE_CLAUSE = auto()
     EXPR_NAME = auto()
     EXPR_STRING = auto()
+    EXPR_INTEGER = auto()
     EXPR_BINARY = auto()
     FILE = auto()
 
@@ -320,6 +346,7 @@ def _parse_expr_inner(parser: Parser, left_op: TokenKind) -> None:
 
 def _parse_small_expr(parser: Parser) -> int:
     # IDENTIFIER
+    # TODO: it looks like this parser.open() is unnecessary
     start = parser.open()
     if parser.at(TokenKind.IDENTIFIER):
         parser.advance()
@@ -327,11 +354,14 @@ def _parse_small_expr(parser: Parser) -> int:
     if parser.at(TokenKind.STRING):
         parser.advance()
         return parser.close(ParentKind.EXPR_STRING, start)
+    if parser.at(TokenKind.INTEGER):
+        parser.advance()
+        return parser.close(ParentKind.EXPR_INTEGER, start)
     parser.advance_with_error("expected expression")
     return parser.close(ParentKind.ERROR_TREE, start)
 
 
-TABLE = [[TokenKind.EQUALS]]
+TABLE = [[TokenKind.AND], [TokenKind.EQUALS, TokenKind.GT, TokenKind.LT]]
 
 
 def right_goes_first(left: TokenKind, right: TokenKind) -> bool:
@@ -418,7 +448,10 @@ def test_simple_tokens() -> None:
     assert [tok.kind for tok in tokenize("")] == []
     check_tok("SELECT", TokenKind.SELECT)
     check_tok("FROM", TokenKind.FROM)
+    check_tok("WHERE", TokenKind.WHERE)
+    check_tok("AND", TokenKind.AND)
     check_tok("'hello :)'", TokenKind.STRING)
+    check_tok("12345", TokenKind.INTEGER)
     check_tok(",", TokenKind.COMMA)
     check_tok("*", TokenKind.STAR)
     check_tok("username", TokenKind.IDENTIFIER)
@@ -463,6 +496,34 @@ def test_parse_simple() -> None:
                         EXPR_STRING
                             STRING ("'aaa'")
     """).strip()
+    )
+
+    assert (
+        stringify_tree(parse(tokenize("SELECT 4 WHERE actor = 'a' AND likes > 10")))
+        == textwrap.dedent("""
+        FILE
+            SELECT_STMT
+                SELECT ("SELECT")
+                FIELD_LIST
+                    EXPR_INTEGER
+                        INTEGER ("4")
+                WHERE_CLAUSE
+                    WHERE ("WHERE")
+                    EXPR_BINARY
+                        EXPR_BINARY
+                            EXPR_NAME
+                                IDENTIFIER ("actor")
+                            EQUALS ("=")
+                            EXPR_STRING
+                                STRING ("'a'")
+                        AND ("AND")
+                        EXPR_BINARY
+                            EXPR_NAME
+                                IDENTIFIER ("likes")
+                            GT (">")
+                            EXPR_INTEGER
+                                INTEGER ("10")
+            """).strip()
     )
 
 
