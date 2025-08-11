@@ -128,17 +128,14 @@ def _create_table_headers(headers: list) -> None:
     TABLE_HEAD.appendChild(header_row)
 
 
-def _create_table_rows(headers: list, rows: list) -> None:
+def _create_table_rows(headers: list, rows: list[dict]) -> None:
     """Create table rows with appearing effect."""
     for row_index, row_data in enumerate(rows):
         tr = document.createElement("tr")
         tr.style.opacity = "0"
 
-        if isinstance(row_data, list):
-            cell_values = row_data
-        else:
-            cell_values = [str(getattr(row_data, header, "")) for header in headers]
-
+        cell_values = [str(row_data.pop(header, "")) for header in headers]
+        print(cell_values)
         for cell_data in cell_values:
             td = document.createElement("td")
             td.textContent = str(cell_data) if cell_data else ""
@@ -157,7 +154,7 @@ def _create_table_rows(headers: list, rows: list) -> None:
         _show_row()
 
 
-def update_table(headers: list, rows: list) -> None:
+def update_table(headers: list, rows: list[dict]) -> None:
     """Populate table with data and appearing effects."""
     # fade out effect before updating
     TABLE_HEAD.style.opacity = "0.3"
