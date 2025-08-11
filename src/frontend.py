@@ -1,3 +1,5 @@
+from typing import Literal
+
 from js import Element, Event, Math, document
 from pyodide.ffi import create_proxy
 from pyodide.ffi.wrappers import set_interval, set_timeout
@@ -29,7 +31,7 @@ def electric_wave_trigger() -> None:
         set_timeout(create_proxy(_activate), 50)
 
 
-def update_status(message: str, stat_type: str = "info") -> None:
+def update_status(message: str, stat_type: Literal["success", "error", "warning", "info"] = "info") -> None:
     """Update the status with a given message."""
     STATUS_MESSAGE.textContent = message
     STATUS_MESSAGE.className = f"status-{stat_type}"
