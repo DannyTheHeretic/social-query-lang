@@ -7,11 +7,28 @@ from pyodide.http import pyfetch
 from frontend import CLEAR_BUTTON, EXECUTE_BUTTON, clear_interface, update_table
 
 
+def flatten_response(data: dict) -> dict:
+    """Flatten a dictionary."""
+    flattened_result = {}
+
+    def _flatten(current: dict, name: str = "") -> dict:
+        if isinstance(current, dict):
+            for field, value in current.items():
+                _flatten(value, name + field + "_")
+        elif isinstance(current, list):
+            for idx, i in enumerate(current):
+                _flatten(i, name + str(idx) + "_")
+        else:
+            flattened_result[name[:-1]] = current  # Drops the extra _
+
+    _flatten(data)
+    return flattened_result
+
+
 async def parse_input(_: Event) -> None:
     """Start of the parser."""
-    print("testing")
     y = document.getElementById("query-input").value.split("=")
-    print(y[-1])  # TODO: Put SQL Parser in # tokenize(y) from parser import tokenize
+    # TODO: Put SQL Parser in # tokenize(y) from parser import tokenize
     await get_user_data(y[-1])
 
 
@@ -22,14 +39,16 @@ async def get_user_data(user: dict) -> dict:
     val = (await response.json())["feed"]
     tb = document.getElementById("table-body")
     tb.innerHTML = ""
-    head = ["Name", "Post"]
+    head = []
     body = []
+
     for i in val:
-        data_point = i["post"]
-        try:
-            body.append([data_point["author"]["displayName"], data_point["record"]["text"]])
-        except KeyError:
-            continue  # Handle if a field is missing (no text maybe?)
+        data = i["post"]
+
+        d = flatten_response(data)
+        body.append(d)
+        [head.append(k) for k in d if k not in head]
+
     update_table(head, body)
     return val
 
