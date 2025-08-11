@@ -10,6 +10,7 @@ dependencies = []
 dev = [
     "pre-commit~=4.2.0",
     "ruff~=0.12.2",
+    "pytest",
 ]
 
 [tool.ruff]
@@ -44,4 +45,10 @@ ignore = [
     "TD002",
     "TD003",
     "FIX",
+    # Function complexity.
+    "C901",
+    # Conflicts with ruff format.
+    "COM812",
+    # Asserts are good, actually.
+    "S101",
 ]
