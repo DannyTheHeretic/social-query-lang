@@ -44,4 +44,7 @@ ignore = [
     "TD002",
     "TD003",
     "FIX",
+    #TODO: REMOVE THIS ITS A BAD IDEA
+    "I001",
+
 ]

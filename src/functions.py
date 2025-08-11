@@ -1,6 +1,6 @@
 """The main script file for Pyodide."""
 
-from js import Event, document  # noqa: I001
+from js import Event, document
 from pyodide.ffi import create_proxy
 from pyodide.http import pyfetch
 
