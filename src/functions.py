@@ -1,17 +1,15 @@
 """The main script file for Pyodide."""
 
 from js import Event, document
+from parser import ParentKind, Token, TokenKind, Tree, parse, tokenize
 from pyodide.ffi import create_proxy
 from pyodide.http import pyfetch
 
 from frontend import CLEAR_BUTTON, EXECUTE_BUTTON, clear_interface, update_table
-from parser import ParentKind, TokenKind, Tree, parse, tokenize
 
 
-def flatten_response(data: dict, query: list | None = None) -> dict:
+def flatten_response(data: dict) -> dict:
     """Flatten a dictionary."""
-    if query is None:
-        query = []
     flattened_result = {}
 
     def _flatten(current: dict, name: str = "") -> dict:
@@ -23,10 +21,8 @@ def flatten_response(data: dict, query: list | None = None) -> dict:
             # for idx, i in enumerate(current):
             #     _flatten(i, name + str(idx) + "_")
             """
-        elif query and name[:-1] in query:
-            flattened_result[name[:-1]] = current  # Drops the extra _
         else:
-            flattened_result[name[:-1]] = current
+            flattened_result[name[:-1]] = current  # Drops the extra _
 
     _flatten(data)
     return flattened_result
@@ -66,7 +62,7 @@ def extract_actor(tree: Tree) -> str | None:
     return None
 
 
-def extract_fields(tree: Tree) -> str | None:
+def extract_fields(tree: Tree) -> list[Token] | None:
     """Extract the actor from the tree."""
     if not tree.kind == ParentKind.FILE:
         raise ValueError
@@ -92,7 +88,6 @@ async def get_user_data(tokens: Tree) -> dict:
     user = extract_actor(tokens)
     fields = extract_fields(tokens)
     field_tokens = [i.children[0] for i in fields if i.kind != TokenKind.STAR]
-    print(field_tokens)
     url = f"https://public.api.bsky.app/xrpc/app.bsky.feed.getAuthorFeed?actor={user}"
     response = await pyfetch(url)
     val = (await response.json())["feed"]
