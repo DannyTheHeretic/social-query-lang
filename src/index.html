@@ -83,7 +83,6 @@
     </div>
 
     <script src="boot.js"></script>
-    <script src="frontend.js"></script>
     <script type="text/javascript">
       const SHOW_BOOT = true; // false to skip boot sequence
       let pyodide;
@@ -182,8 +181,8 @@
             window.bootProgress.complete();
           }
 
-          window.updateStatus("Python backend loaded", "success");
-          window.updateConnectionInfo(0, "pyodide ready");
+          pkg.frontend.update_status("Python backend loaded", "success");
+          pkg.frontend.update_connection_info(0, "pyodide ready");
 
         } catch (error) {
           console.error("Failed to load pyodide:", error);
@@ -193,12 +192,12 @@
           }
 
           // update UI with error state
-          window.updateStatus("Python backend failed - fallback mode", "error");
-          window.updateConnectionInfo(0, "javascript fallback");
+          pkg.frontend.update_status("Python backend failed - fallback mode", "error");
+          pkg.frontend.update_connection_info(0, "javascript fallback");
 
           // setup fallback functionality
           document.getElementById('execute-btn').addEventListener('click', () => {
-            window.updateStatus("Python backend not available", "error");
+            pkg.frontend.update_status("Python backend not available", "error");
           });
         }
       }
