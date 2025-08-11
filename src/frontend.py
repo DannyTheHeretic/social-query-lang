@@ -1,4 +1,4 @@
-from js import Element, Math, document
+from js import Element, Event, Math, document
 from pyodide.ffi import create_proxy
 from pyodide.ffi.wrappers import set_interval, set_timeout
 
@@ -79,7 +79,7 @@ def update_connection_info(row: int, status: str) -> None:
     CONNECTION_INFO.textContent = f"rows: {row} | status: {status}"
 
 
-def clear_interface() -> None:
+def clear_interface(_: Event) -> None:
     """Clear the user interface."""
     clear_query_input()
     show_empty_table()
