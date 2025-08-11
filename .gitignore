@@ -21,7 +21,7 @@ env
 *.so
 dist/
 build/
-
+uv.lock
 # IDEs
 # PyCharm
 .idea/
@@ -29,3 +29,4 @@ build/
 .vscode/
 # MacOS
 .DS_Store
+src/sql_bsky.egg-info/*
