@@ -4,6 +4,7 @@ from js import Event, document
 from pyodide.ffi import create_proxy
 from pyodide.http import pyfetch
 
+import frontend  # noqa: F401
 from frontend import CLEAR_BUTTON, EXECUTE_BUTTON, clear_interface, update_table
 from parser import ParentKind, Token, TokenKind, Tree, parse, tokenize
 
