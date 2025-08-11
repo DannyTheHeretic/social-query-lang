@@ -30,4 +30,3 @@ uv.lock
 # MacOS
 .DS_Store
 src/sql_bsky.egg-info/*
-src/functions.py
