@@ -83,12 +83,11 @@
     </div>
 
     <script src="boot.js"></script>
-    <script src="frontend.js"></script>
     <script type="text/javascript">
       const SHOW_BOOT = true; // false to skip boot sequence
       let pyodide;
       let pkg;
-
+      let rand_add;
       async function main() {
         try {
           if (SHOW_BOOT) {
@@ -101,7 +100,8 @@
           if (SHOW_BOOT) {
             const progressInterval = setInterval(() => {
               // random progress updates while loading
-              const randomProgress = Math.random() * 10 + 5;
+              rand_add += 1
+              const randomProgress = rand_add+5;
               window.bootProgress.updateProgress(randomProgress);
             }, 200);
 
@@ -119,7 +119,7 @@
 
           console.log("Loading setup script...");
           if (SHOW_BOOT) {
-            window.bootProgress.updateProgress(20);
+            window.bootProgress.updateProgress(15);
           }
 
           await pyodide.runPythonAsync(`
@@ -130,7 +130,7 @@
           `);
 
           if (SHOW_BOOT) {
-            window.bootProgress.updateProgress(70);
+            window.bootProgress.updateProgress(25);
           }
 
           if (SHOW_BOOT) {
@@ -140,35 +140,39 @@
           // execute setup to load all python modules
           console.log("Setting up python modules...");
           if (SHOW_BOOT) {
-            window.bootProgress.updateProgress(30);
+            window.bootProgress.updateProgress(35);
           }
 
           const setup = pyodide.pyimport("setup");
+
+          if (SHOW_BOOT) {
+            window.bootProgress.updateProgress(50);
+          }
+
           await setup.setup_pyodide_scripts();
 
           if (SHOW_BOOT) {
-            window.bootProgress.updateProgress(80);
+            window.bootProgress.updateProgress(60);
           }
-
           if (SHOW_BOOT) {
             window.bootProgress.modulesLoaded();
           }
 
           console.log("Loading functions module...");
           if (SHOW_BOOT) {
-            window.bootProgress.updateProgress(15);
+            window.bootProgress.updateProgress(70);
           }
 
           await new Promise(resolve => setTimeout(resolve, 300));
 
           if (SHOW_BOOT) {
-            window.bootProgress.updateProgress(50);
+            window.bootProgress.updateProgress(80);
           }
 
           pkg = pyodide.pyimport("functions");
 
           if (SHOW_BOOT) {
-            window.bootProgress.updateProgress(85);
+            window.bootProgress.updateProgress(100);
           }
 
           await new Promise(resolve => setTimeout(resolve, 200));
@@ -182,8 +186,8 @@
             window.bootProgress.complete();
           }
 
-          window.updateStatus("Python backend loaded", "success");
-          window.updateConnectionInfo(0, "pyodide ready");
+          pkg.frontend.update_status("Python backend loaded", "success");
+          pkg.frontend.update_connection_info(0, "pyodide ready");
 
         } catch (error) {
           console.error("Failed to load pyodide:", error);
@@ -193,12 +197,12 @@
           }
 
           // update UI with error state
-          window.updateStatus("Python backend failed - fallback mode", "error");
-          window.updateConnectionInfo(0, "javascript fallback");
+          pkg.frontend.update_status("Python backend failed - fallback mode", "error");
+          pkg.frontend.update_connection_info(0, "javascript fallback");
 
           // setup fallback functionality
           document.getElementById('execute-btn').addEventListener('click', () => {
-            window.updateStatus("Python backend not available", "error");
+            pkg.frontend.update_status("Python backend not available", "error");
           });
         }
       }
