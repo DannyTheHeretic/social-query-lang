@@ -296,17 +296,36 @@ async function finishBoot() {
         document.body.removeChild(bootScreen);
       }
       bootScreen = null;
+
+      if (window.pyodide && window.pkg) {
+        try {
+          const auth_modal = window.pyodide.pyimport("auth_modal");
+          auth_modal.show_auth_modal_after_boot();
+          console.log("Auth modal initialized via Python");
+        } catch (error) {
+          console.error("Error loading auth modal:", error);
+          // fallback: show interface directly
+          showMainInterface();
+        }
+      } else {
+        console.log("Pyodide not ready, showing interface directly");
+        showMainInterface();
+      }
+
     }, 500);
   }
 
+  isBootComplete = true;
+  console.log("Boot sequence complete - authentication phase");
+}
+
+function showMainInterface() {
   const mainInterface = document.querySelector(".interface");
   if (mainInterface) {
     mainInterface.style.transition = "opacity 0.5s ease";
     mainInterface.style.opacity = "1";
   }
-
-  isBootComplete = true;
-  console.log("Boot sequence complete - system ready");
+  console.log("Main interface shown directly");
 }
 
 function waitForContinue() {

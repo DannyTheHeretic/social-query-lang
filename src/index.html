@@ -82,17 +82,83 @@
       </div>
     </div>
 
+    <!-- bluesky auth modal -->
+    <div class="auth-modal" id="auth-modal">
+      <div class="modal-container">
+        <div class="modal-header">
+          BLUESKY AUTHENTICATION PROTOCOL
+        </div>
+        <div class="modal-body">
+          <div class="auth-title">SECURE LOGIN REQUIRED</div>
+          <div class="auth-subtitle">Enter BlueSky credentials or proceed anonymously</div>
+
+          <form id="auth-form">
+            <div class="form-group">
+              <label class="form-label" for="bluesky-username">USERNAME:</label>
+              <input
+                type="text"
+                id="bluesky-username"
+                name="username"
+                class="form-input"
+                placeholder="your.handle.bsky.social"
+                autocomplete="username"
+              >
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="bluesky-password">PASSWORD:</label>
+              <input
+                type="password"
+                id="bluesky-password"
+                name="password"
+                class="form-input"
+                placeholder="••••••••••••••••"
+                autocomplete="current-password"
+              >
+            </div>
+
+            <div class="button-container">
+              <button type="submit" class="modal-btn btn-primary" id="login-btn">
+                AUTHENTICATE
+              </button>
+              <button type="button" class="modal-btn btn-secondary" id="stealth-btn">
+                STEALTH MODE
+              </button>
+            </div>
+
+            <div class="security-notice">
+              Your credentials are processed locally and never stored permanently.
+              Stealth mode allows read-only access to public posts.
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
     <script src="boot.js"></script>
     <script type="text/javascript">
       const SHOW_BOOT = true; // false to skip boot sequence
       let pyodide;
       let pkg;
-      let rand_add;
+      let rand_add = 0;
+
+      window.AppState = {
+        authData: null,
+        isAuthenticated: false,
+        pyodideReady: false
+      };
+
       async function main() {
         try {
+          const mainInterface = document.querySelector(".interface");
+          if (mainInterface) {
+            mainInterface.style.opacity = "0";
+          }
+
           if (SHOW_BOOT) {
             await window.bootProgress.start();
           }
+
           console.log("Starting pyodide load...");
 
           // load pyodide with progress updates
@@ -100,8 +166,8 @@
           if (SHOW_BOOT) {
             const progressInterval = setInterval(() => {
               // random progress updates while loading
-              rand_add += 1
-              const randomProgress = rand_add+5;
+              rand_add += 1;
+              const randomProgress = rand_add + 5;
               window.bootProgress.updateProgress(randomProgress);
             }, 200);
 
@@ -112,6 +178,7 @@
           }
 
           console.log("Pyodide loaded successfully");
+          window.pyodide = pyodide;
 
           if (SHOW_BOOT) {
             window.bootProgress.pyodideLoaded();
@@ -170,6 +237,7 @@
           }
 
           pkg = pyodide.pyimport("functions");
+          window.pkg = pkg;
 
           if (SHOW_BOOT) {
             window.bootProgress.updateProgress(100);
@@ -180,14 +248,16 @@
           if (SHOW_BOOT) {
             window.bootProgress.functionsLoaded();
           }
+
           console.log("Python environment ready");
+          window.AppState.pyodideReady = true;
 
           if (SHOW_BOOT) {
             window.bootProgress.complete();
+          } else {
+            const auth_modal = pyodide.pyimport("auth_modal");
+            auth_modal.show_auth_modal_after_boot();
           }
-
-          pkg.frontend.update_status("Python backend loaded", "success");
-          pkg.frontend.update_connection_info(0, "pyodide ready");
 
         } catch (error) {
           console.error("Failed to load pyodide:", error);
@@ -196,13 +266,15 @@
             window.bootProgress.complete();
           }
 
-          // update UI with error state
-          pkg.frontend.update_status("Python backend failed - fallback mode", "error");
-          pkg.frontend.update_connection_info(0, "javascript fallback");
+          const mainInterface = document.querySelector(".interface");
+          if (mainInterface) {
+            mainInterface.style.opacity = "1";
+          }
 
           // setup fallback functionality
           document.getElementById('execute-btn').addEventListener('click', () => {
-            pkg.frontend.update_status("Python backend not available", "error");
+            document.getElementById('status-message').textContent = "Python backend not available";
+            document.getElementById('status-message').className = "status-error";
           });
         }
       }
