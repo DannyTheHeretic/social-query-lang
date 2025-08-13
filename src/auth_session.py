@@ -66,7 +66,7 @@ class BskySession:
         # Bluesky credentials
         self.username = username
         self.password = password
-        self.pds_host = "https://bsky.social"
+        self.pds_host = "https://public.api.bsky.app"
         # Instance client
         self.client = PyfetchSession()
         # Access token
@@ -76,8 +76,8 @@ class BskySession:
 
     async def login(self) -> None:
         """Create an authenticated session and save tokens."""
-        endpoint = f"{self.pds_host}/xrpc/com.atproto.server.createSession"
-        session_info = await self.client.post(
+        endpoint: str = "https://bsky.social/xrpc/com.atproto.server.createSession"
+        session_info: FetchResponse = await self.client.post(
             endpoint,
             headers={"Content-Type": "application/json"},
             data={
@@ -85,13 +85,13 @@ class BskySession:
                 "password": self.password,
             },
         )
-        session_info = await session_info.json()
+        session_info: dict = await session_info.json()
         try:
-            self.access_jwt = session_info["accessJwt"]
-            self.refresh_jwt = session_info["refreshJwt"]
-            self.did = session_info["did"]
-            self.handle = session_info["handle"]
-
+            self.access_jwt: str = session_info["accessJwt"]
+            self.refresh_jwt: str = session_info["refreshJwt"]
+            self.did: str = session_info["did"]
+            self.handle: str = session_info["handle"]
+            self.pds_host = "https://bsky.social"
             self.client.default_headers.update(
                 {
                     "Content-Type": "application/json",
@@ -115,7 +115,6 @@ class BskySession:
         self.access_jwt = session_info["accessJwt"]
         self.refresh_jwt = session_info["refreshJwt"]
         self.did = session_info["did"]
-        self.handle = session_info["handle"]
 
         self.client.default_headers.update(
             {
@@ -123,6 +122,14 @@ class BskySession:
                 "Authorization": f"Bearer {self.access_jwt}",
             },
         )
+
+    async def get_timeline(self) -> dict:
+        """Get a users timeline."""
+        endpoint = f"{self.pds_host}/xrpc/app.bsky.feed.getTimeline"
+        response = await self.client.get(
+            endpoint,
+        )
+        return await response.json()
 
     async def get_profile(self) -> dict:
         """Get a user profile."""
