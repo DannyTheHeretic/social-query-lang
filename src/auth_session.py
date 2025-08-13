@@ -1,5 +1,6 @@
 # Imports
 import json
+from typing import Literal
 
 from pyodide.http import FetchResponse, pyfetch  # The system we will actually use
 
@@ -16,7 +17,7 @@ class PyfetchSession:
 
         Args:
             url (str): The Endpoint to hit
-            headers (dict | None, optional): Any headers that will get added to the request. Defaults to None.
+            headers (dict | None, optional): Any headers that will get added to the request. Defaults to "".
 
         Returns:
             FetchResponse: The return data from the request
@@ -42,7 +43,7 @@ class PyfetchSession:
         Args:
             url (str): The Endpoint to hit
             data (str | dict | None, optional): A dictionary or string to use for the body. Defaults to "".
-            headers (dict | None, optional): Any headers that will get added to the request. Defaults to None.
+            headers (dict | None, optional): Any headers that will get added to the request. Defaults to "".
 
         Returns:
             FetchResponse: The return data from the request
@@ -199,6 +200,68 @@ class BskySession:
     async def get_timeline(self) -> dict:
         """Get a users timeline."""
         endpoint = f"{self.pds_host}/xrpc/app.bsky.feed.getTimeline"
+        response = await self.client.get(
+            endpoint,
+        )
+        return await response.json()
+
+    # Only function that needs this many params, I am not making a data class for it
+    async def search_posts(  # noqa: PLR0913
+        self,
+        q: str,
+        sort: Literal["top", "latest"] = "latest",
+        since: str = "",
+        until: str = "",
+        mentions: str = "",
+        author: str = "",
+        tag: str = "",
+        limit: int = 10,
+        cursor: str = "",
+    ) -> dict:
+        """Search for bluesky posts.
+
+        Args:
+            q (str): the given query
+            sort (Literal[&quot;top&quot;, &quot;latest&quot;], optional): The sort Order. Defaults to "latest".
+            since (str, optional): Since when in YYYY-MM-DD format. Defaults to "".
+            until (str, optional): Until when in YYYY-MM-DD format. Defaults to "".
+            mentions (str, optional): Post mentions the given account. Defaults to "".
+            author (str, optional): Author of a given post. Defaults to "".
+            tag (str, optional): Tags on the post. Defaults to "".
+            limit (int, optional): Limit the number returned. Defaults to 10.
+            cursor (str, optional): Bsky Cursor. Defaults to "".
+
+        """
+        endpoint = (
+            f"{self.pds_host}/xrpc/app.bsky.feed.searchPosts"
+            f"?q={q}&sort={sort}&since={since}&until={until}"
+            f"&mentions={mentions}&author={author}&tag={tag}"
+            f"&limit={limit}&cursor={cursor}"
+        )
+        response = await self.client.get(
+            endpoint,
+        )
+        return await response.json()
+
+    async def get_followers(self, actor: str, limit: int = 10, cursor: str = "") -> dict:
+        """Get a users followers."""
+        endpoint = f"{self.pds_host}/xrpc/app.bsky.graph.getFollowers?actor={actor}&limit={limit}&cursor={cursor}"
+        response = await self.client.get(
+            endpoint,
+        )
+        return await response.json()
+
+    async def get_follows(self, actor: str, limit: int = 10, cursor: str = "") -> dict:
+        """Get a users follows."""
+        endpoint = f"{self.pds_host}/xrpc/app.bsky.graph.getFollows?actor={actor}&limit={limit}&cursor={cursor}"
+        response = await self.client.get(
+            endpoint,
+        )
+        return await response.json()
+
+    async def get_mutual_follows(self, actor: str, limit: int = 10, cursor: str = "") -> dict:
+        """Get a users mutual follows."""
+        endpoint = f"{self.pds_host}/xrpc/app.bsky.graph.getKnownFollows?actor={actor}&limit={limit}&cursor={cursor}"
         response = await self.client.get(
             endpoint,
         )
