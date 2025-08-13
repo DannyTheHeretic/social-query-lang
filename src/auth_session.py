@@ -123,25 +123,50 @@ class BskySession:
             },
         )
 
-    async def get_timeline(self) -> dict:
-        """Get a users timeline."""
-        endpoint = f"{self.pds_host}/xrpc/app.bsky.feed.getTimeline"
+    ### Start of the actual endpoints -> https://docs.bsky.app/docs/api/at-protocol-xrpc-api
+    async def get_preferences(self) -> dict:
+        """Get the logged in users preferences."""
+        endpoint = f"{self.pds_host}/xrpc/app.bsky.actor.getPreferences"
         response = await self.client.get(
             endpoint,
         )
         return await response.json()
 
-    async def get_profile(self) -> dict:
+    async def get_profile(self, actor: str) -> dict:
         """Get a user profile."""
-        endpoint = f"{self.pds_host}/xrpc/app.bsky.actor.getProfile?actor={self.username}"
+        endpoint = f"{self.pds_host}/xrpc/app.bsky.actor.getProfile?actor={actor}"
         response = await self.client.get(
             endpoint,
         )
         return await response.json()
 
-    async def search(self, query: str) -> dict:
-        """Search Bluesky."""
-        endpoint = f"{self.pds_host}/xrpc/app.bsky.actor.searchActors?q={query}"
+    async def get_suggestions(self, limit: int = 10, cursor: str = "") -> dict:
+        """Get the logged in users suggestion."""
+        endpoint = f"{self.pds_host}/xrpc/app.bsky.actor.getSuggestions?limit={limit}&cursor={cursor}"
+        response = await self.client.get(
+            endpoint,
+        )
+        return await response.json()
+
+    async def search_actors(self, q: str, limit: int = 10, cursor: str = "") -> dict:
+        """Search for actors."""
+        endpoint = f"{self.pds_host}/xrpc/app.bsky.actor.searchActors?q={q}&limit={limit}&cursor={cursor}"
+        response = await self.client.get(
+            endpoint,
+        )
+        return await response.json()
+
+    async def get_actor_feeds(self, actor: str, limit: int = 10, cursor: str = "") -> dict:
+        """Get a given actors feed."""
+        endpoint = f"{self.pds_host}/xrpc/app.bsky.actor.searchActors?actor={actor}&limit={limit}&cursor={cursor}"
+        response = await self.client.get(
+            endpoint,
+        )
+        return await response.json()
+
+    async def get_actor_likes(self, actor: str, limit: int = 10, cursor: str = "") -> dict:
+        """Get a given actors likes."""
+        endpoint = f"{self.pds_host}/xrpc/app.bsky.feed.getActorLikes?actor={actor}&limit={limit}&cursor={cursor}"
         response = await self.client.get(
             endpoint,
         )
@@ -150,6 +175,30 @@ class BskySession:
     async def get_author_feed(self, actor: str) -> dict:
         """Get a specific user feed."""
         endpoint = f"{self.pds_host}/xrpc/app.bsky.feed.getAuthorFeed?actor={actor}"
+        response = await self.client.get(
+            endpoint,
+        )
+        return await response.json()
+
+    async def get_feed(self, feed: str, limit: int = 10, cursor: str = "") -> dict:
+        """Get a specified feed."""
+        endpoint = f"{self.pds_host}/xrpc/app.bsky.feed.getFeed&feed={feed}&limit={limit}&cursor={cursor}"
+        response = await self.client.get(
+            endpoint,
+        )
+        return await response.json()
+
+    async def get_suggested_feeds(self, limit: int = 10, cursor: str = "") -> dict:
+        """Get suggested feeds."""
+        endpoint = f"{self.pds_host}/xrpc/app.bsky.feed.getSuggestedFeeds?limit={limit}&cursor={cursor}"
+        response = await self.client.get(
+            endpoint,
+        )
+        return await response.json()
+
+    async def get_timeline(self) -> dict:
+        """Get a users timeline."""
+        endpoint = f"{self.pds_host}/xrpc/app.bsky.feed.getTimeline"
         response = await self.client.get(
             endpoint,
         )
