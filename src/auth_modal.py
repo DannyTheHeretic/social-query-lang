@@ -6,6 +6,7 @@ try:
     import frontend
 except ImportError:
     frontend = None
+from auth_session import BskySession
 
 # dom
 AUTH_MODAL = None
@@ -122,12 +123,17 @@ def handle_authentication() -> None:
 
     print(f"Capturing auth data for: {username}")
 
-    def complete_auth() -> None:
+    async def complete_auth() -> None:
         global auth_data  # noqa: PLW0603
 
         # catch and store authentication data
         auth_data = {"username": username, "password": password, "mode": "authenticated"}
-
+        window.session = BskySession(username, password)
+        is_logged_in = await window.session.login()
+        if is_logged_in:
+            print("logged in")
+        else:
+            print("No Log IN")  # TODO: Handle the Failed Auth System
         LOGIN_BTN.innerHTML = "AUTHENTICATED ✓"
         LOGIN_BTN.style.background = "#004400"
 

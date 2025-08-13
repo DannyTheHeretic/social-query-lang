@@ -12,7 +12,16 @@ class PyfetchSession:
         self.default_headers = headers or {}
 
     async def get(self, url: str, headers: dict | None = None) -> FetchResponse:
-        """Get request for the pyfetch."""
+        """Get request for the pyfetch.
+
+        Args:
+            url (str): The Endpoint to hit
+            headers (dict | None, optional): Any headers that will get added to the request. Defaults to None.
+
+        Returns:
+            FetchResponse: The return data from the request
+
+        """
         merged_headers = self.default_headers.copy()
         if headers:
             merged_headers.update(headers)
@@ -25,11 +34,20 @@ class PyfetchSession:
     async def post(
         self,
         url: str,
-        obj: dict | None = "",
-        data: dict | None = None,
+        data: str | dict | None = "",
         headers: dict | None = None,
     ) -> FetchResponse:
-        """Post request."""
+        """Post request.
+
+        Args:
+            url (str): The Endpoint to hit
+            data (str | dict | None, optional): A dictionary or string to use for the body. Defaults to "".
+            headers (dict | None, optional): Any headers that will get added to the request. Defaults to None.
+
+        Returns:
+            FetchResponse: The return data from the request
+
+        """
         merged_headers = self.default_headers.copy()
         if headers:
             merged_headers.update(headers)
@@ -37,12 +55,12 @@ class PyfetchSession:
             url,
             method="POST",
             headers=merged_headers,
-            body=json.dumps(obj) if isinstance(obj, dict) else data,
+            body=json.dumps(data) if isinstance(data, dict) else data,
         )
 
 
 class BskySession:
-    """Class to etablish an auth session."""
+    """Class to establish an auth session."""
 
     def __init__(self, username: str, password: str) -> None:
         # Bluesky credentials
@@ -62,14 +80,43 @@ class BskySession:
         session_info = await self.client.post(
             endpoint,
             headers={"Content-Type": "application/json"},
-            obj={
+            data={
                 "identifier": self.username,
                 "password": self.password,
             },
         )
         session_info = await session_info.json()
+        try:
+            self.access_jwt = session_info["accessJwt"]
+            self.refresh_jwt = session_info["refreshJwt"]
+            self.did = session_info["did"]
+            self.handle = session_info["handle"]
+
+            self.client.default_headers.update(
+                {
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {self.access_jwt}",
+                },
+            )
+        except KeyError:
+            # TODO: Handle the error on the front end
+            return False
+        else:
+            return True
+
+    async def refresh_token(self) -> None:
+        """Refresh the token."""
+        endpoint = f"{self.pds_host}/xrpc/com.atproto.server.refreshSession"
+
+        session_info = await self.client.post(
+            endpoint, data="", headers={"Authorization": f"Bearer {self.refresh_jwt}"}
+        )
+        session_info = await session_info.json()
         self.access_jwt = session_info["accessJwt"]
         self.refresh_jwt = session_info["refreshJwt"]
+        self.did = session_info["did"]
+        self.handle = session_info["handle"]
+
         self.client.default_headers.update(
             {
                 "Content-Type": "application/json",
