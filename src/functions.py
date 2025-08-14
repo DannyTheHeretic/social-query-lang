@@ -1,8 +1,7 @@
 """The main script file for Pyodide."""
 
-from js import Event, document
+from js import Event, document, window
 from pyodide.ffi import create_proxy
-from pyodide.http import pyfetch
 
 import frontend  # noqa: F401
 from frontend import CLEAR_BUTTON, EXECUTE_BUTTON, clear_interface, update_table
@@ -23,7 +22,7 @@ def flatten_response(data: dict) -> dict:
             #     _flatten(i, name + str(idx) + "_")
             """
         else:
-            flattened_result[name[:-1]] = current  # Drops the extra _
+            flattened_result[name[:-1].lower()] = current  # Drops the extra _
 
     _flatten(data)
     return flattened_result
@@ -80,17 +79,15 @@ async def parse_input(_: Event) -> None:
     """Start of the parser."""
     y = document.getElementById("query-input").value
     tree: Tree = parse(tokenize(y))
-    await get_user_data(tree)
+    await get_author_feed(tree)
 
 
-async def get_user_data(tokens: Tree) -> dict:
-    """Pyfetch command example."""
-    user = extract_actor(tokens)
+async def get_user_timeline(tokens: Tree) -> dict:
+    """Get the current users timeline."""
     fields = extract_fields(tokens)
     field_tokens = [i.children[0] for i in fields if i.kind != TokenKind.STAR]
-    url = f"https://public.api.bsky.app/xrpc/app.bsky.feed.getAuthorFeed?actor={user}"
-    response = await pyfetch(url)
-    val = (await response.json())["feed"]
+    feed = await window.session.get_timeline()
+    val = feed["feed"]
     tb = document.getElementById("table-body")
     tb.innerHTML = ""
     head = []
@@ -102,7 +99,34 @@ async def get_user_data(tokens: Tree) -> dict:
 
         d = flatten_response(data)
         if field_tokens:
-            body.append({j: d[j] for j in head})
+            body.append({j: d[j.lower()] for j in head})
+        else:
+            body.append(d)
+            [head.append(k) for k in d if k not in head]
+
+    update_table(head, body)
+    return val
+
+
+async def get_author_feed(tokens: Tree) -> dict:
+    """Get a given actors feed."""
+    user = extract_actor(tokens)
+    fields = extract_fields(tokens)
+    field_tokens = [i.children[0] for i in fields if i.kind != TokenKind.STAR]
+    feed = await window.session.get_author_feed(user)
+    val = feed["feed"]
+    tb = document.getElementById("table-body")
+    tb.innerHTML = ""
+    head = []
+    if field_tokens:
+        head = [j.text for j in field_tokens]
+    body = []
+    for i in val:
+        data = i
+
+        d = flatten_response(data)
+        if field_tokens:
+            body.append({j: d[j.lower()] for j in head})
         else:
             body.append(d)
             [head.append(k) for k in d if k not in head]

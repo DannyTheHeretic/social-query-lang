@@ -19,6 +19,10 @@ async def setup_pyodide_scripts() -> None:
     with Path.open("frontend.py", "wb") as f:
         f.write(await response.bytes())
 
+    response = await pyfetch("./auth_session.py")
+    with Path.open("auth_session.py", "wb") as f:
+        f.write(await response.bytes())
+
     response = await pyfetch("./auth_modal.py")
     with Path.open("auth_modal.py", "wb") as f:
         f.write(await response.bytes())

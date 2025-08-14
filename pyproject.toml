@@ -4,7 +4,9 @@ description = "Social query language"
 version = "0.1.0"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "ascii-magic>=2.3.0",
+]
 
 [dependency-groups]
 dev = [
