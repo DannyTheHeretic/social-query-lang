@@ -6,7 +6,6 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "ascii-magic>=2.3.0",
-    "pillow>=11.3.0",
 ]
 
 [dependency-groups]
