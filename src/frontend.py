@@ -139,7 +139,17 @@ def _create_table_rows(headers: list, rows: list[dict]) -> None:
         cell_values = [str(row_data.pop(header, "")) for header in headers]
         for cell_data in cell_values:
             td = document.createElement("td")
-            td.textContent = str(cell_data) if cell_data else ""
+            # handle images (naive?)
+            if cell_data.startswith("https://cdn.bsky.app/img/"):
+                images = cell_data.split(" | ")
+                for image in images:
+                    hyperlink = document.createElement("a")
+                    hyperlink.href = image
+                    hyperlink.target = "_blank"
+                    hyperlink.textContent = "Image"
+                    td.append(hyperlink)
+            else:
+                td.textContent = str(cell_data) if cell_data else ""
             tr.appendChild(td)
 
         TABLE_BODY.appendChild(tr)

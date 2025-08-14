@@ -109,6 +109,21 @@ async def get_user_timeline(tokens: Tree) -> dict:
     for i in val:
         data = i
 
+        # Extract any embedded images from the post and put their link in data
+        post = data["post"]
+        if "embed" in post:
+            embed_type = post["embed"]["$type"]
+            images = None
+            if embed_type == "app.bsky.embed.images#view":
+                images = post["embed"]["images"]
+            image_links = []
+            if images:
+                for image in images:
+                    image_link = image["thumb"]
+                    image_links.append(image_link)
+            if image_links:
+                post["images"] = " | ".join(image_links)
+
         d = flatten_response(data)
         if field_tokens:
             body.append({j: d[j.lower()] for j in head})
@@ -135,6 +150,23 @@ async def get_author_feed(tokens: Tree) -> dict:
     body = []
     for i in val:
         data = i
+
+        # Extract any embedded images from the post and put their link in data
+        # This throws an error if post_images is used 
+        # as a field and no posts returned have any images...
+        post = data["post"]
+        if "embed" in post:
+            embed_type = post["embed"]["$type"]
+            images = None
+            if embed_type == "app.bsky.embed.images#view":
+                images = post["embed"]["images"]
+            image_links = []
+            if images:
+                for image in images:
+                    image_link = image["thumb"]
+                    image_links.append(image_link)
+            if image_links:
+                post["images"] = " | ".join(image_links)
 
         d = flatten_response(data)
         if field_tokens:
