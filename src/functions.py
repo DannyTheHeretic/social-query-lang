@@ -152,7 +152,7 @@ async def get_author_feed(tokens: Tree) -> dict:
         data = i
 
         # Extract any embedded images from the post and put their link in data
-        # This throws an error if post_images is used 
+        # This throws an error if post_images is used
         # as a field and no posts returned have any images...
         post = data["post"]
         if "embed" in post:
