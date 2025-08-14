@@ -158,7 +158,7 @@ def handle_stealth_mode() -> None:
 
         # save stealth mode
         auth_data = {"mode": "stealth"}
-
+        window.session = BskySession("", "")
         STEALTH_BTN.innerHTML = "STEALTH ACTIVE ✓"
         STEALTH_BTN.style.background = "#444400"
 
