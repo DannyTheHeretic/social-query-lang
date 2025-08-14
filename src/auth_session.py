@@ -165,7 +165,7 @@ class BskySession:
         )
         return await response.json()
 
-    async def get_actor_likes(self, actor: str, limit: int = 10, cursor: str = "") -> dict:
+    async def get_actor_likes(self, actor: str, limit: int = 10, cursor: str = "") -> dict:  # Requires Auth
         """Get a given actors likes."""
         endpoint = f"{self.pds_host}/xrpc/app.bsky.feed.getActorLikes?actor={actor}&limit={limit}&cursor={cursor}"
         response = await self.client.get(
