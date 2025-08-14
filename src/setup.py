@@ -2,6 +2,7 @@
 
 from pathlib import Path
 
+import micropip
 from pyodide.http import pyfetch
 
 
@@ -18,6 +19,7 @@ async def setup_pyodide_scripts() -> None:
     response = await pyfetch("./frontend.py")
     with Path.open("frontend.py", "wb") as f:
         f.write(await response.bytes())
+    await micropip.install("ascii_magic")
 
     response = await pyfetch("./auth_session.py")
     with Path.open("auth_session.py", "wb") as f:

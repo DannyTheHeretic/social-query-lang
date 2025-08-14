@@ -185,10 +185,11 @@
           }
 
           console.log("Loading setup script...");
+          await pyodide.loadPackage("micropip")
+
           if (SHOW_BOOT) {
             window.bootProgress.updateProgress(15);
           }
-
           await pyodide.runPythonAsync(`
             from pyodide.http import pyfetch
             response = await pyfetch("./setup.py")

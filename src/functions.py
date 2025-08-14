@@ -1,7 +1,11 @@
 """The main script file for Pyodide."""
 
+from io import BytesIO
+
+from ascii_magic import AsciiArt
 from js import Event, document, window
 from pyodide.ffi import create_proxy
+from pyodide.http import pyfetch
 
 import frontend  # noqa: F401
 from frontend import CLEAR_BUTTON, EXECUTE_BUTTON, clear_interface, update_table
@@ -80,6 +84,14 @@ async def parse_input(_: Event) -> None:
     y = document.getElementById("query-input").value
     tree: Tree = parse(tokenize(y))
     await get_author_feed(tree)
+
+
+async def load_image(url: str) -> str:
+    """Load an image as monochrome ascii."""
+    res = await pyfetch(url)
+    bites = BytesIO(await res.bytes())
+    ascii_image = AsciiArt.from_image(bites)
+    return ascii_image.to_ascii(columns=100, monochrome=True)
 
 
 async def get_user_timeline(tokens: Tree) -> dict:
