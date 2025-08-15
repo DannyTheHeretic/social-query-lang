@@ -612,10 +612,10 @@ body {
 
 #image-modal {
   position: fixed;
-  top: 20px;
+  top: 80px;
   left: 50%;
-  height: 100%;
-  width:80%;
+  height: 50vh;
+  width: 50%;
   transform: translateX(-50%);
   z-index: 2;
   display: none;
@@ -634,6 +634,41 @@ body {
 #ascii-display {
   width: 100ch;
   font-size: 8px;
+  margin: 0 auto 20px auto;
+  text-align: center;
+  display: block;
+}
+
+#image-alt-text {
+  display: block;
+  margin-top: 15px;
+  margin-bottom: 20px;
+  color: #00ff00;
+  font-size: 18px;
+  padding: 0 10px;
+}
+
+.modal-footer {
+  margin-top: auto;
+  text-align: center;
+  padding: 10px;
+  border-top: 1px solid #004400;
+}
+
+#image-modal-full-link {
+  font-size: 10px;
+  color: #66ff66;
+  text-decoration: none;
+  padding: 4px 8px;
+  border: 1px solid #004400;
+  background: #001100;
+  transition: all 0.2s ease;
+}
+
+#image-modal-full-link:hover {
+  background: #002200;
+  border-color: #00ff00;
+  color: #00ff00;
 }
 
 .auth-modal {

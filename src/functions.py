@@ -107,10 +107,9 @@ async def get_user_timeline(tokens: Tree) -> dict:
             image_links = []
             if images:
                 for image in images:
-                    image_link = image["thumb"]
+                    image_link = f"{image['thumb']},{image['fullsize']},{image['alt']}"
                     image_links.append(image_link)
-            if image_links:
-                post["images"] = " | ".join(image_links)
+            post["images"] = " | ".join(image_links)
 
         d = flatten_response(data)
         if field_tokens:
@@ -151,10 +150,9 @@ async def get_author_feed(tokens: Tree) -> dict:
             image_links = []
             if images:
                 for image in images:
-                    image_link = image["thumb"]
+                    image_link = f"{image['thumb']},{image['fullsize']},{image['alt']}"
                     image_links.append(image_link)
-            if image_links:
-                post["images"] = " | ".join(image_links)
+            post["images"] = " | ".join(image_links)
 
         d = flatten_response(data)
         if field_tokens:

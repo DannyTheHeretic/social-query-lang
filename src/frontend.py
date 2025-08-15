@@ -133,13 +133,16 @@ def _create_table_headers(headers: list) -> None:
     TABLE_HEAD.appendChild(header_row)
 
 
-def async_show_image_modal(img_url: str) -> None:
+def async_show_image_modal(thumb_url: str, full_size_url: str, alt: str) -> None:
     """Wrap the async show modal function to work with create_proxy.
 
     https://github.com/pyodide/pyodide/discussions/2229
     """
-    _ = asyncio.ensure_future(show_image_modal(img_url))
+    _ = asyncio.ensure_future(show_image_modal(thumb_url, full_size_url, alt))
     _.add_done_callback(_.cancel)  # discard the future to avoid warnings
+
+
+EMBED_IMAGE_LEN = 3
 
 
 def _create_table_rows(headers: list, rows: list[dict]) -> None:
@@ -151,22 +154,32 @@ def _create_table_rows(headers: list, rows: list[dict]) -> None:
         cell_values = [str(row_data.pop(header, "")) for header in headers]
         for cell_data in cell_values:
             td = document.createElement("td")
-            # handle images (naive?)
+            # handle image links
             if cell_data.startswith("https://cdn.bsky.app/img/"):
                 images = cell_data.split(" | ")
                 for image in images:
+                    items = image.split(",")
+                    thumbnail_link = items[0]
+                    full_size_link = ""
+                    alt_text = ""
+                    # handle embedded images vs profile pics
+                    if len(items) == EMBED_IMAGE_LEN:
+                        full_size_link = items[1]
+                        alt_text = items[2]
                     hyperlink = document.createElement("a")
                     hyperlink.href = "#"
                     hyperlink.textContent = "Image"
 
-                    def create_click_handler(img_url: str) -> callable:
+                    def create_click_handler(img_url: str, fullsize_url: str, alt: str) -> callable:
                         """Capture the image value.
 
                         without this there is a weird issue where all of the images are the same.
                         """
-                        return lambda _: async_show_image_modal(img_url)
+                        return lambda _: async_show_image_modal(img_url, fullsize_url, alt)
 
-                    hyperlink.addEventListener("click", create_proxy(create_click_handler(image)))
+                    hyperlink.addEventListener(
+                        "click", create_proxy(create_click_handler(thumbnail_link, full_size_link, alt_text))
+                    )
                     td.append(hyperlink)
             else:
                 td.textContent = str(cell_data) if cell_data else ""
