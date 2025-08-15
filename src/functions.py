@@ -105,7 +105,6 @@ async def parse_input(_: Event) -> None:
     """Start of the parser."""
     y = document.getElementById("query-input").value
     tree: Tree = parse(tokenize(y))
-    print(tree)
     await sql_to_api_handler(tree)
 
 
@@ -113,7 +112,6 @@ async def sql_to_api_handler(tokens: Tree) -> dict:
     """Handle going from SQL to the API."""
     where_expr = extract_where(tokens)
     table = extract_table(tokens)
-    print(where_expr)
     fields = extract_fields(tokens)
     field_tokens = [i.children[0] for i in fields if i.kind != TokenKind.STAR]
 
