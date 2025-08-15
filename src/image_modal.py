@@ -11,6 +11,8 @@ ALT_TEXT = document.getElementById("image-alt-text")
 FULL_SIZE_LINK = document.getElementById("image-modal-full-link")
 CLOSE_BUTTON = document.getElementById("image-modal-close")
 
+_image_cache = {}
+
 
 async def show_image_modal(thumb_link: str, fullsize_link: str, alt: str) -> None:
     """Show the image modal with the given link."""
@@ -33,11 +35,17 @@ def hide_image_modal(_: Event) -> None:
 
 async def load_image(url: str) -> str:
     """Load an image as monochrome ascii."""
-    url = await window.session.get_blob(url)
-    res = await pyfetch(url)
+    if url in _image_cache:  # "Cache" the images for speeding up things.
+        return _image_cache[url]
+
+    blob_url = await window.session.get_blob(url)
+    res = await pyfetch(blob_url)
     bites = BytesIO(await res.bytes())
     ascii_image = AsciiArt.from_image(bites)
-    return ascii_image.to_ascii(columns=100, monochrome=True)
+    ascii_image = AsciiArt.from_image(bites)
+    ascii_str = ascii_image.to_ascii(columns=100, monochrome=True)
+    _image_cache[url] = ascii_str
+    return ascii_str
 
 
 CLOSE_BUTTON.addEventListener("click", create_proxy(hide_image_modal))
