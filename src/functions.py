@@ -71,13 +71,8 @@ def extract_where(tree: Tree) -> tuple[str, str] | None:
     stmt = tree.children[0]
     for c in stmt.children:
         if c.kind == ParentKind.WHERE_CLAUSE:
-            where_clause = c
-            break
-    else:
-        return None
-
-    expr = where_clause.children[1]
-    return walk_where(expr)
+            return walk_where(c.children[1])
+    return []
 
 
 def extract_fields(tree: Tree) -> list[Token] | None:
@@ -88,9 +83,7 @@ def extract_fields(tree: Tree) -> list[Token] | None:
     for c in stmt.children:
         if c.kind == ParentKind.FIELD_LIST:
             return c.children[::2]
-            break
-    else:
-        return None
+    return []
 
 
 def extract_table(tree: Tree) -> str:
@@ -105,8 +98,7 @@ def extract_table(tree: Tree) -> str:
                 if child.kind == TokenKind.IDENTIFIER:
                     return child.text
             break
-    else:
-        return None
+    return ""
 
 
 async def parse_input(_: Event) -> None:
@@ -118,23 +110,33 @@ async def parse_input(_: Event) -> None:
 
 
 async def sql_to_api_handler(tokens: Tree) -> dict:
-    """Get a given actors feed."""
+    """Handle going from SQL to the API."""
     where_expr = extract_where(tokens)
     table = extract_table(tokens)
-    print(table)
+    print(where_expr)
     fields = extract_fields(tokens)
     field_tokens = [i.children[0] for i in fields if i.kind != TokenKind.STAR]
+
     for i in where_expr:
         if i[0] in ["actor", "author"]:
             api = i
             break
-    if api[0] == "actor":
-        feed = await window.session.get_actor_feeds(api[2])
-        val = feed["feeds"]
-    elif api[0] == "author":
-        feed = await window.session.get_author_feed(api[2])
+    else:
+        # No Where Expression Matches
+        api = ["", ""]
+    if table == "feed":
+        if api[0] == "actor":
+            feed = await window.session.get_actor_feeds(api[2])
+            val = feed["feeds"]
+        elif api[0] == "author":
+            feed = await window.session.get_author_feed(api[2])
+            val = feed["feed"]
+        else:
+            feed = await window.session.get_timeline()
+            val = feed["feed"]
+    else:
+        feed = await window.session.get_timeline()
         val = feed["feed"]
-
     tb = document.getElementById("table-body")
     tb.innerHTML = ""
     head = []
