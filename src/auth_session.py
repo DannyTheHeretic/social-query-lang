@@ -266,3 +266,9 @@ class BskySession:
             endpoint,
         )
         return await response.json()
+
+    async def get_blob(self, url: str) -> str:
+        """Get a specific blob."""
+        did, cid = url.split("/")[-2:]
+        cid = cid.split("@")[0]
+        return f"https://bsky.social/xrpc/com.atproto.sync.getBlob?did={did}&cid={cid}"
