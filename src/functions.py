@@ -1,7 +1,7 @@
 """The main script file for Pyodide."""
+
 from js import Event, document, window
 from pyodide.ffi import create_proxy
-
 
 import frontend  # noqa: F401
 from frontend import CLEAR_BUTTON, EXECUTE_BUTTON, clear_interface, update_table

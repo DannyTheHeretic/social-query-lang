@@ -1,10 +1,11 @@
-from typing import Literal
 import asyncio
+from typing import Literal
 
-from image_modal import show_image_modal
 from js import Element, Event, Math, document
 from pyodide.ffi import create_proxy
 from pyodide.ffi.wrappers import set_interval, set_timeout
+
+from image_modal import show_image_modal
 
 # constants for random effects
 ELECTRIC_WAVE_PROBABILITY = 0.03
@@ -20,6 +21,7 @@ STATUS_MESSAGE = document.getElementById("status-message")
 CONNECTION_INFO = document.getElementById("connection-info")
 LOADING_OVERLAY = document.getElementById("loading-overlay")
 ELECTRIC_WAVE = document.getElementById("electric-wave")
+
 
 def electric_wave_trigger() -> None:
     """Roll to see if you will activate the electric wave."""
@@ -130,8 +132,14 @@ def _create_table_headers(headers: list) -> None:
 
     TABLE_HEAD.appendChild(header_row)
 
-def async_show_image_modal(img):
-   asyncio.ensure_future(show_image_modal(img))
+
+def async_show_image_modal(img_url: str) -> None:
+    """Wrap the async show modal function to work with create_proxy.
+
+    https://github.com/pyodide/pyodide/discussions/2229
+    """
+    _ = asyncio.ensure_future(show_image_modal(img_url))
+    _.add_done_callback(_.discard)  # discard the future to avoid warnings
 
 
 def _create_table_rows(headers: list, rows: list[dict]) -> None:
@@ -150,9 +158,14 @@ def _create_table_rows(headers: list, rows: list[dict]) -> None:
                     hyperlink = document.createElement("a")
                     hyperlink.href = "#"
                     hyperlink.textContent = "Image"
-                    # function that captures the current image value
-                    def create_click_handler(img_url):
+
+                    def create_click_handler(img_url: str) -> callable:
+                        """Capture the image value.
+
+                        without this there is a weird issue where all of the images are the same.
+                        """
                         return lambda _: async_show_image_modal(img_url)
+
                     hyperlink.addEventListener("click", create_proxy(create_click_handler(image)))
                     td.append(hyperlink)
             else:
