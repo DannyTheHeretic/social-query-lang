@@ -16,6 +16,10 @@ async def setup_pyodide_scripts() -> None:
     with Path.open("parser.py", "wb") as f:
         f.write(await response.bytes())
 
+    response = await pyfetch("./image_modal.py")
+    with Path.open("image_modal.py", "wb") as f:
+        f.write(await response.bytes())
+
     response = await pyfetch("./frontend.py")
     with Path.open("frontend.py", "wb") as f:
         f.write(await response.bytes())

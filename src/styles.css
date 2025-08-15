@@ -610,6 +610,32 @@ body {
   }
 }
 
+#image-modal {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  height: 100%;
+  width:80%;
+  transform: translateX(-50%);
+  z-index: 2;
+  display: none;
+  text-align: center;
+}
+
+#image-modal-container {
+  max-width: 100%;
+}
+
+#image-modal-close {
+  cursor: pointer;
+  float: right;
+}
+
+#ascii-display {
+  width: 100ch;
+  font-size: 8px;
+}
+
 .auth-modal {
   position: fixed;
   top: 0;

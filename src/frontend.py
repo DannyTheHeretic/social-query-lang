@@ -1,5 +1,7 @@
 from typing import Literal
+import asyncio
 
+from image_modal import show_image_modal
 from js import Element, Event, Math, document
 from pyodide.ffi import create_proxy
 from pyodide.ffi.wrappers import set_interval, set_timeout
@@ -18,7 +20,6 @@ STATUS_MESSAGE = document.getElementById("status-message")
 CONNECTION_INFO = document.getElementById("connection-info")
 LOADING_OVERLAY = document.getElementById("loading-overlay")
 ELECTRIC_WAVE = document.getElementById("electric-wave")
-
 
 def electric_wave_trigger() -> None:
     """Roll to see if you will activate the electric wave."""
@@ -129,6 +130,9 @@ def _create_table_headers(headers: list) -> None:
 
     TABLE_HEAD.appendChild(header_row)
 
+def async_show_image_modal(img):
+   asyncio.ensure_future(show_image_modal(img))
+
 
 def _create_table_rows(headers: list, rows: list[dict]) -> None:
     """Create table rows with appearing effect."""
@@ -144,9 +148,12 @@ def _create_table_rows(headers: list, rows: list[dict]) -> None:
                 images = cell_data.split(" | ")
                 for image in images:
                     hyperlink = document.createElement("a")
-                    hyperlink.href = image
-                    hyperlink.target = "_blank"
+                    hyperlink.href = "#"
                     hyperlink.textContent = "Image"
+                    # function that captures the current image value
+                    def create_click_handler(img_url):
+                        return lambda _: async_show_image_modal(img_url)
+                    hyperlink.addEventListener("click", create_proxy(create_click_handler(image)))
                     td.append(hyperlink)
             else:
                 td.textContent = str(cell_data) if cell_data else ""
