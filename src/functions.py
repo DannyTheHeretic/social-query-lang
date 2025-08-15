@@ -3,7 +3,7 @@
 from js import Event, document, window
 from pyodide.ffi import create_proxy
 
-import frontend  # noqa: F401
+import frontend
 from frontend import CLEAR_BUTTON, EXECUTE_BUTTON, clear_interface, update_table
 from parser import ParentKind, Token, TokenKind, Tree, parse, tokenize
 
@@ -133,8 +133,10 @@ async def sql_to_api_handler(tokens: Tree) -> dict:
             feed = await window.session.get_timeline()
             val = feed["feed"]
     else:
-        feed = await window.session.get_timeline()
-        val = feed["feed"]
+        frontend.clear_interface("")
+        frontend.update_status(f"Error getting from {table}", "error")
+        frontend.trigger_electric_wave()
+        return {}
     tb = document.getElementById("table-body")
     tb.innerHTML = ""
     head = []
@@ -152,6 +154,7 @@ async def sql_to_api_handler(tokens: Tree) -> dict:
             [head.append(k) for k in d if k not in head]
 
     update_table(head, body)
+    frontend.update_status(f"Data successfully retrieved from {table}", "success")
     return val
 
 
