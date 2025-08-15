@@ -139,7 +139,7 @@ def async_show_image_modal(img_url: str) -> None:
     https://github.com/pyodide/pyodide/discussions/2229
     """
     _ = asyncio.ensure_future(show_image_modal(img_url))
-    _.add_done_callback(_.discard)  # discard the future to avoid warnings
+    _.add_done_callback(_.cancel)  # discard the future to avoid warnings
 
 
 def _create_table_rows(headers: list, rows: list[dict]) -> None:
