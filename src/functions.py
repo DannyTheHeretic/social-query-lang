@@ -110,6 +110,8 @@ async def get_user_timeline(tokens: Tree) -> dict:
                     image_link = f"{image['thumb']},{image['fullsize']},{image['alt']}"
                     image_links.append(image_link)
             post["images"] = " | ".join(image_links)
+        else:
+            post["images"] = ""  # make an empty field to avoid errors in posts without images
 
         d = flatten_response(data)
         if field_tokens:
@@ -139,8 +141,6 @@ async def get_author_feed(tokens: Tree) -> dict:
         data = i
 
         # Extract any embedded images from the post and put their link in data
-        # This throws an error if post_images is used
-        # as a field and no posts returned have any images...
         post = data["post"]
         if "embed" in post:
             embed_type = post["embed"]["$type"]
@@ -153,6 +153,8 @@ async def get_author_feed(tokens: Tree) -> dict:
                     image_link = f"{image['thumb']},{image['fullsize']},{image['alt']}"
                     image_links.append(image_link)
             post["images"] = " | ".join(image_links)
+        else:
+            post["images"] = ""  # make an empty field to avoid errors in posts without images
 
         d = flatten_response(data)
         if field_tokens:
