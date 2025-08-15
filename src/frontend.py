@@ -1,4 +1,3 @@
-import asyncio
 from typing import Literal
 
 from js import Element, Event, Math, document
@@ -133,15 +132,6 @@ def _create_table_headers(headers: list) -> None:
     TABLE_HEAD.appendChild(header_row)
 
 
-def async_show_image_modal(thumb_url: str, full_size_url: str, alt: str) -> None:
-    """Wrap the async show modal function to work with create_proxy.
-
-    https://github.com/pyodide/pyodide/discussions/2229
-    """
-    _ = asyncio.ensure_future(show_image_modal(thumb_url, full_size_url, alt))
-    _.add_done_callback(_.cancel)  # discard the future to avoid warnings
-
-
 EMBED_IMAGE_LEN = 3
 
 
@@ -175,7 +165,13 @@ def _create_table_rows(headers: list, rows: list[dict]) -> None:
 
                         without this there is a weird issue where all of the images are the same.
                         """
-                        return lambda _: async_show_image_modal(img_url, fullsize_url, alt)
+
+                        async def _handler(
+                            _: Event, img_url: str = img_url, fullsize_url: str = fullsize_url, alt: str = alt
+                        ) -> callable:
+                            await show_image_modal(img_url, fullsize_url, alt)
+
+                        return _handler
 
                     hyperlink.addEventListener(
                         "click", create_proxy(create_click_handler(thumbnail_link, full_size_link, alt_text))

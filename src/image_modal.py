@@ -18,8 +18,8 @@ async def show_image_modal(thumb_link: str, fullsize_link: str, alt: str) -> Non
     FULL_SIZE_LINK.href = fullsize_link or thumb_link
     ALT_TEXT.textContent = alt
     ASCII_DISPLAY.textContent = ""
-    ascii = await load_image(thumb_link)
-    ASCII_DISPLAY.textContent = ascii
+    ascii_img = await load_image(thumb_link)
+    ASCII_DISPLAY.textContent = ascii_img
 
 
 def hide_image_modal(_: Event) -> None:
