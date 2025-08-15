@@ -614,12 +614,15 @@ body {
   position: fixed;
   top: 80px;
   left: 50%;
-  height: 50vh;
+  height: 85vh;
   width: 50%;
   transform: translateX(-50%);
   z-index: 2;
   display: none;
   text-align: center;
+  overflow: scroll;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 #image-modal-container {
@@ -669,6 +672,10 @@ body {
   background: #002200;
   border-color: #00ff00;
   color: #00ff00;
+}
+
+#image-modal::-webkit-scrollbar {
+  display: none;
 }
 
 .auth-modal {
