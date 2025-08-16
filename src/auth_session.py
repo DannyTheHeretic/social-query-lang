@@ -135,6 +135,8 @@ class BskySession:
 
     async def get_profile(self, actor: str) -> dict:
         """Get a user profile."""
+        if actor == None:
+            actor = self.handle
         endpoint = f"{self.pds_host}/xrpc/app.bsky.actor.getProfile?actor={actor}"
         response = await self.client.get(
             endpoint,

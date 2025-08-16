@@ -116,7 +116,7 @@ async def sql_to_api_handler(tokens: Tree) -> dict:
     field_tokens = [i.children[0] for i in fields if i.kind != TokenKind.STAR]
 
     for i in where_expr:
-        if i[0] in ["actor", "author"]:
+        if i[0] in ["actor", "author", "feed"]:
             api = i
             break
     else:
@@ -129,9 +129,42 @@ async def sql_to_api_handler(tokens: Tree) -> dict:
         elif api[0] == "author":
             feed = await window.session.get_author_feed(api[2])
             val = feed["feed"]
-        else:
+        else api[0] == "feed":
             feed = await window.session.get_timeline()
             val = feed["feed"]
+    elif table == "timeline":
+        feed = await window.session.get_timeline()
+        val = feed["feed"]
+    elif table == "profile":
+        if api[0] == "actors": 
+            feed = await window.session.get_profile(api[2])
+            val = feed
+        feed = await window.session.get_profile(None)
+        val = feed
+    elif table == "suggestions":
+        if api[0] == "actors": 
+            feed = await window.session.get_suggestions(api[2])
+            val = feed["actors"]
+        else:
+            feed = await window.session.get_suggested_feeds()
+            val = feed["feeds"]
+    elif table == "likes":
+         if api[0] == "actor":
+            feed = await window.session.get_actor_likes(api[2])
+            val = feed["feeds"]
+    elif table=="followers":
+        if api[0] == "actor":
+            feed = await window.session.get_followers(api[2])
+            val = feed["followers"]
+    elif table=="following":
+        if api[0] == "actor":
+            feed = await window.session.get_followers(api[2])
+            val = feed["followers"]
+    elif table=="mutuals":
+        if api[0] == "actor":
+            feed = await window.session.get_followers(api[2])
+            val = feed["followers"]
+
     else:
         frontend.clear_interface("")
         frontend.update_status(f"Error getting from {table}", "error")
