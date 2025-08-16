@@ -108,6 +108,60 @@ async def parse_input(_: Event) -> None:
     await sql_to_api_handler(tree)
 
 
+async def processor(api: tuple[str, str], table: str) -> dict:  # noqa: PLR0912 C901
+    """Process the sql statements into a api call."""
+    val = {}
+    if table == "feed":
+        if api[0] == "actor":
+            feed = await window.session.get_actor_feeds(api[2])
+            val = feed["feeds"]
+        elif api[0] == "author":
+            feed = await window.session.get_author_feed(api[2])
+            val = feed["feed"]
+    elif table == "timeline":
+        feed = await window.session.get_timeline()
+        val = feed["feed"]
+    elif table == "profile":
+        if api[0] == "actors":
+            feed = await window.session.get_profile(api[2])
+            val = feed
+        else:
+            feed = await window.session.get_profile(None)
+            val = feed
+    elif table == "suggestions":
+        if api[0] == "actors":
+            feed = await window.session.get_suggestions(api[2])
+            val = feed["actors"]
+        else:
+            feed = await window.session.get_suggested_feeds()
+            val = feed["feeds"]
+    elif table == "likes":
+        if api[0] == "actor":
+            feed = await window.session.get_actor_likes(api[2])
+            val = feed["feeds"]
+        else:
+            pass
+    elif table == "followers":
+        if api[0] == "actor":
+            feed = await window.session.get_followers(api[2])
+            val = feed["followers"]
+        else:
+            pass
+    elif table == "following":
+        if api[0] == "actor":
+            feed = await window.session.get_following(api[2])
+            val = feed["followers"]
+        else:
+            pass
+    elif table == "mutuals":
+        if api[0] == "actor":
+            feed = await window.session.get_mutual_followers(api[2])
+            val = feed["followers"]
+        else:
+            pass
+    return val
+
+
 async def sql_to_api_handler(tokens: Tree) -> dict:
     """Handle going from SQL to the API."""
     where_expr = extract_where(tokens)
@@ -122,50 +176,8 @@ async def sql_to_api_handler(tokens: Tree) -> dict:
     else:
         # No Where Expression Matches
         api = ["", ""]
-    if table == "feed":
-        if api[0] == "actor":
-            feed = await window.session.get_actor_feeds(api[2])
-            val = feed["feeds"]
-        elif api[0] == "author":
-            feed = await window.session.get_author_feed(api[2])
-            val = feed["feed"]
-        else api[0] == "feed":
-            feed = await window.session.get_timeline()
-            val = feed["feed"]
-    elif table == "timeline":
-        feed = await window.session.get_timeline()
-        val = feed["feed"]
-    elif table == "profile":
-        if api[0] == "actors": 
-            feed = await window.session.get_profile(api[2])
-            val = feed
-        feed = await window.session.get_profile(None)
-        val = feed
-    elif table == "suggestions":
-        if api[0] == "actors": 
-            feed = await window.session.get_suggestions(api[2])
-            val = feed["actors"]
-        else:
-            feed = await window.session.get_suggested_feeds()
-            val = feed["feeds"]
-    elif table == "likes":
-         if api[0] == "actor":
-            feed = await window.session.get_actor_likes(api[2])
-            val = feed["feeds"]
-    elif table=="followers":
-        if api[0] == "actor":
-            feed = await window.session.get_followers(api[2])
-            val = feed["followers"]
-    elif table=="following":
-        if api[0] == "actor":
-            feed = await window.session.get_followers(api[2])
-            val = feed["followers"]
-    elif table=="mutuals":
-        if api[0] == "actor":
-            feed = await window.session.get_followers(api[2])
-            val = feed["followers"]
-
-    else:
+    val = processor(api, table)
+    if not val:
         frontend.clear_interface("")
         frontend.update_status(f"Error getting from {table}", "error")
         frontend.trigger_electric_wave()
