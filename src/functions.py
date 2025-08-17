@@ -262,7 +262,7 @@ async def sql_to_api_handler(tokens: Tree) -> dict:
     field_tokens = [i.children[0] for i in fields if i.kind != TokenKind.STAR]
 
     for i in where_expr:
-        if i[0] in ["actor", "author", "feed"]:
+        if i[0] in ["actor", "author", "feed", "actors"]:
             api = i
             break
     else:
