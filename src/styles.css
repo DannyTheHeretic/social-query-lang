@@ -856,6 +856,52 @@ body {
   background: #222200;
 }
 
+/* CRT Toggle Button Styles */
+.crt-toggle-container {
+  margin: 12px 0 8px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.btn-crt {
+  background: #003300;
+  border: 2px outset #00ff00;
+  color: #00ff00;
+  padding: 8px 20px;
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  min-width: 150px;
+  transform: scale(1.0);
+}
+
+.btn-crt:hover {
+  background: #004400;
+  box-shadow: 0 0 8px rgba(0, 255, 0, 0.3);
+}
+
+.btn-crt:active {
+  border: 2px inset #00ff00;
+  background: #002200;
+  transform: scale(0.98);
+}
+
+/* CRT effect disabled state styles */
+.btn-crt.crt-disabled {
+  background: #333300;
+  border-color: #ffff00;
+  color: #ffff00;
+}
+
+.btn-crt.crt-disabled:hover {
+  background: #444400;
+  box-shadow: 0 0 8px rgba(255, 255, 0, 0.3);
+}
+
 .security-notice {
   background: #330000;
   border: 1px solid #ff6600;
@@ -902,6 +948,11 @@ body {
     width: 100%;
   }
 
+  .btn-crt {
+    width: 100%;
+    margin: 8px 0;
+  }
+
   .modal-header {
     font-size: 14px;
     padding: 6px 12px;
@@ -919,6 +970,11 @@ body {
 
   .form-input {
     font-size: 12px;
+  }
+
+  .btn-crt {
+    font-size: 14px;
+    padding: 8px 20px;
   }
 }
 
