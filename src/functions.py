@@ -224,30 +224,33 @@ async def processor(api: tuple[str, str], table: str) -> dict:  # noqa: PLR0912 
 
 def _extract_images_from_post(data: dict) -> str:
     """Extract any embedded images from a post and return them as a delimited string."""
-    if "post" not in data:
+    if not isinstance(data, dict):
         return ""
 
+    if "post" not in data:
+        return ""
+    
     post = data["post"]
-
+    
     # Check if the post has embedded content
     if "embed" not in post:
         return ""
-
+    
     embed_type = post["embed"].get("$type", "")
-
+    
     # Only process image embeds
     if embed_type != "app.bsky.embed.images#view":
         return ""
-
+    
     images = post["embed"].get("images", [])
     if not images:
         return ""
-
+    
     image_links = []
     for image in images:
         image_link = f"{image['thumb']},{image['fullsize']},{image['alt']}"
         image_links.append(image_link)
-
+    
     return " | ".join(image_links)
 
 
@@ -271,14 +274,11 @@ async def sql_to_api_handler(tokens: Tree) -> dict:
         frontend.update_status(f"Error getting from {table}", "error")
         frontend.trigger_electric_wave()
         return {}
-
+    
     # Handle stealth mode error for profile queries
     if val == "stealth_error":
         frontend.clear_interface("")
-        frontend.update_status(
-            "Cannot get own profile in stealth mode. Try: SELECT * FROM profile WHERE actors = 'username.bsky.social'",
-            "warning",
-        )
+        frontend.update_status("Cannot get own profile in stealth mode. Try: SELECT * FROM profile WHERE actors = 'username.bsky.social'", "warning")
         frontend.trigger_electric_wave()
         return {}
     tb = document.getElementById("table-body")
@@ -289,7 +289,7 @@ async def sql_to_api_handler(tokens: Tree) -> dict:
     body = []
     for i in val:
         data = i
-
+        
         # Only try to extract images if the data structure supports it
         images = _extract_images_from_post(data)
         if images and "post" in data:
