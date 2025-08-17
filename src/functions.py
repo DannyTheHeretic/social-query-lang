@@ -161,6 +161,7 @@ async def processor(api: tuple[str, str], table: str) -> dict:  # noqa: PLR0912 
             pass
     return val
 
+
 def _extract_images_from_post(data: dict) -> str:
     """Extract any embedded images from a post and return them as a delimited string."""
     post = data["post"]
@@ -176,7 +177,6 @@ def _extract_images_from_post(data: dict) -> str:
                 image_links.append(image_link)
         return " | ".join(image_links)
     return ""  # make an empty field to avoid errors in posts without images
-
 
 
 async def sql_to_api_handler(tokens: Tree) -> dict:
