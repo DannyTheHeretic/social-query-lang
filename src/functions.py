@@ -2,6 +2,7 @@
 
 from js import Event, document, window
 from pyodide.ffi import create_proxy
+from pyodide.ffi.wrappers import set_timeout
 
 import frontend
 from frontend import CLEAR_BUTTON, EXECUTE_BUTTON, clear_interface, update_table
@@ -26,6 +27,53 @@ def flatten_response(data: dict) -> dict:
 
     _flatten(data)
     return flattened_result
+
+
+def blue_screen_of_death() -> None:
+    """Easter Egg: Show WinXP Blue Screen of Death."""
+    input_field = document.getElementById("query-input")
+    if input_field:
+        input_field.value = ""
+
+    bsod = document.createElement("div")
+    bsod.className = "bsod-overlay"
+    bsod.innerHTML = (
+        '<div class="bsod-content">'
+        '  <div class="bsod-header">A problem has been detected and Windows has been shut down to prevent damage '
+        "  to your computer.</div>"
+        '  <div class="bsod-error">IRQL_NOT_LESS_OR_EQUAL</div>'
+        '  <div class="bsod-text">'
+        "    If this is the first time you've seen this stop error screen, "
+        "    restart your computer. If this screen appears again, follow these steps:<br><br>"
+        "    Check to make sure any new hardware or software is properly installed. "
+        "    If this is a new installation, ask your hardware or software manufacturer "
+        "    for any Windows updates you might need.<br><br>"
+        "    If problems continue, disable or remove any newly installed hardware or software. "
+        "    Disable BIOS memory options such as caching or shadowing. If you need to use "
+        "    Safe Mode to remove or disable components, restart your computer, press F8 "
+        "    to select Advanced Startup Options, and then select Safe Mode."
+        "  </div>"
+        '  <div class="bsod-technical">'
+        "    Technical information:<br><br>"
+        "    *** STOP: 0x0000000A (0xFE520004, 0x00000001, 0x00000001, 0x804F9319)<br><br>"
+        "    *** Address 804F9319 base at 804D7000, DateStamp 3844d96e - ntoskrnl.exe<br><br>"
+        "    Beginning dump of physical memory<br>"
+        "    Physical memory dump complete.<br>"
+        "    Contact your system administrator or technical support group for further assistance."
+        "  </div>"
+        "</div>"
+    )
+
+    document.body.appendChild(bsod)
+    frontend.flash_screen("#0000ff", 100)
+
+    def remove_bsod() -> None:
+        if bsod.parentNode:
+            document.body.removeChild(bsod)
+        frontend.update_status("System recovered from critical error", "warning")
+        frontend.trigger_electric_wave()
+
+    set_timeout(create_proxy(remove_bsod), 4000)
 
 
 def clean_value(text: str) -> str:
@@ -103,8 +151,18 @@ def extract_table(tree: Tree) -> str:
 
 async def parse_input(_: Event) -> None:
     """Start of the parser."""
-    y = document.getElementById("query-input").value
-    tree: Tree = parse(tokenize(y))
+    query = document.getElementById("query-input").value.strip()
+
+    if not query:
+        frontend.update_status("Enter a SQL query to execute", "warning")
+        return
+
+    clean_query = query.upper().replace(";", "").replace(",", "").strip()
+    if "DROP TABLE USERS" in clean_query:
+        blue_screen_of_death()
+        return
+
+    tree: Tree = parse(tokenize(query))
     await sql_to_api_handler(tree)
 
 
@@ -193,7 +251,7 @@ async def sql_to_api_handler(tokens: Tree) -> dict:
     else:
         # No Where Expression Matches
         api = ["", ""]
-    val = processor(api, table)
+    val = await processor(api, table)
     if not val:
         frontend.clear_interface("")
         frontend.update_status(f"Error getting from {table}", "error")
