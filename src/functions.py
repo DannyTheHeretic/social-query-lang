@@ -268,6 +268,7 @@ async def sql_to_api_handler(tokens: Tree) -> dict:
     else:
         # No Where Expression Matches
         api = ["", ""]
+    
     val = await processor(api, table)
     if not val:
         frontend.clear_interface("")
@@ -281,12 +282,17 @@ async def sql_to_api_handler(tokens: Tree) -> dict:
         frontend.update_status("Cannot get own profile in stealth mode. Try: SELECT * FROM profile WHERE actors = 'username.bsky.social'", "warning")
         frontend.trigger_electric_wave()
         return {}
+
+    if isinstance(val, dict):
+        val = [val]
+
     tb = document.getElementById("table-body")
     tb.innerHTML = ""
     head = []
     if field_tokens:
         head = [j.text for j in field_tokens]
     body = []
+    
     for i in val:
         data = i
         
@@ -296,8 +302,9 @@ async def sql_to_api_handler(tokens: Tree) -> dict:
             data["post"]["images"] = images
 
         d = flatten_response(data)
+        
         if field_tokens:
-            body.append({j: d[j.lower()] for j in head})
+            body.append({j: d.get(j.lower(), "") for j in head})
         else:
             body.append(d)
             [head.append(k) for k in d if k not in head]
