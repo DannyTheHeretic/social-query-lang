@@ -135,8 +135,14 @@ class BskySession:
 
     async def get_profile(self, actor: str) -> dict:
         """Get a user profile."""
+        # If no actor specified and we're authenticated, use our handle
         if actor is None:
-            actor = self.handle
+            if hasattr(self, "handle") and self.handle:
+                actor = self.handle
+            else:
+                # Return special error object for stealth mode
+                return {"stealth_error": True}
+
         endpoint = f"{self.pds_host}/xrpc/app.bsky.actor.getProfile?actor={actor}"
         response = await self.client.get(
             endpoint,

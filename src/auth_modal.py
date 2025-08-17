@@ -37,11 +37,6 @@ def init_auth_modal() -> None:
     AUTH_FORM = document.getElementById("auth-form")
     STATUS_TEXT = document.getElementById("security-notice")
 
-    # Debug logging
-    print(f"CRT Toggle Button found: {CRT_TOGGLE_BTN is not None}")
-    if CRT_TOGGLE_BTN:
-        print(f"CRT Button ID: {CRT_TOGGLE_BTN.id}")
-
     setup_event_listeners()
     print("Auth modal initialized")
 

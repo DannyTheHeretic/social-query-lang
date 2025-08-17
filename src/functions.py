@@ -166,7 +166,7 @@ async def parse_input(_: Event) -> None:
     await sql_to_api_handler(tree)
 
 
-async def processor(api: tuple[str, str], table: str) -> dict:  # noqa: PLR0912 C901
+async def processor(api: tuple[str, str], table: str) -> dict:  # noqa: PLR0912 C901 PLR0915
     """Process the sql statements into a api call."""
     val = {}
     if table == "feed":
@@ -185,6 +185,8 @@ async def processor(api: tuple[str, str], table: str) -> dict:  # noqa: PLR0912 
             val = feed
         else:
             feed = await window.session.get_profile(None)
+            if isinstance(feed, dict) and feed.get("stealth_error"):
+                return "stealth_error"
             val = feed
     elif table == "suggestions":
         if api[0] == "actors":
@@ -222,19 +224,31 @@ async def processor(api: tuple[str, str], table: str) -> dict:  # noqa: PLR0912 
 
 def _extract_images_from_post(data: dict) -> str:
     """Extract any embedded images from a post and return them as a delimited string."""
+    if "post" not in data:
+        return ""
+
     post = data["post"]
-    if "embed" in post:
-        embed_type = post["embed"]["$type"]
-        images = None
-        if embed_type == "app.bsky.embed.images#view":
-            images = post["embed"]["images"]
-        image_links = []
-        if images:
-            for image in images:
-                image_link = f"{image['thumb']},{image['fullsize']},{image['alt']}"
-                image_links.append(image_link)
-        return " | ".join(image_links)
-    return ""  # make an empty field to avoid errors in posts without images
+
+    # Check if the post has embedded content
+    if "embed" not in post:
+        return ""
+
+    embed_type = post["embed"].get("$type", "")
+
+    # Only process image embeds
+    if embed_type != "app.bsky.embed.images#view":
+        return ""
+
+    images = post["embed"].get("images", [])
+    if not images:
+        return ""
+
+    image_links = []
+    for image in images:
+        image_link = f"{image['thumb']},{image['fullsize']},{image['alt']}"
+        image_links.append(image_link)
+
+    return " | ".join(image_links)
 
 
 async def sql_to_api_handler(tokens: Tree) -> dict:
@@ -257,6 +271,16 @@ async def sql_to_api_handler(tokens: Tree) -> dict:
         frontend.update_status(f"Error getting from {table}", "error")
         frontend.trigger_electric_wave()
         return {}
+
+    # Handle stealth mode error for profile queries
+    if val == "stealth_error":
+        frontend.clear_interface("")
+        frontend.update_status(
+            "Cannot get own profile in stealth mode. Try: SELECT * FROM profile WHERE actors = 'username.bsky.social'",
+            "warning",
+        )
+        frontend.trigger_electric_wave()
+        return {}
     tb = document.getElementById("table-body")
     tb.innerHTML = ""
     head = []
@@ -265,7 +289,11 @@ async def sql_to_api_handler(tokens: Tree) -> dict:
     body = []
     for i in val:
         data = i
-        data["post"]["images"] = _extract_images_from_post(data)
+
+        # Only try to extract images if the data structure supports it
+        images = _extract_images_from_post(data)
+        if images and "post" in data:
+            data["post"]["images"] = images
 
         d = flatten_response(data)
         if field_tokens:
