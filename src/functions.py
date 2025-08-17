@@ -161,6 +161,23 @@ async def processor(api: tuple[str, str], table: str) -> dict:  # noqa: PLR0912 
             pass
     return val
 
+def _extract_images_from_post(data: dict) -> str:
+    """Extract any embedded images from a post and return them as a delimited string."""
+    post = data["post"]
+    if "embed" in post:
+        embed_type = post["embed"]["$type"]
+        images = None
+        if embed_type == "app.bsky.embed.images#view":
+            images = post["embed"]["images"]
+        image_links = []
+        if images:
+            for image in images:
+                image_link = f"{image['thumb']},{image['fullsize']},{image['alt']}"
+                image_links.append(image_link)
+        return " | ".join(image_links)
+    return ""  # make an empty field to avoid errors in posts without images
+
+
 
 async def sql_to_api_handler(tokens: Tree) -> dict:
     """Handle going from SQL to the API."""
@@ -190,6 +207,7 @@ async def sql_to_api_handler(tokens: Tree) -> dict:
     body = []
     for i in val:
         data = i
+        data["post"]["images"] = _extract_images_from_post(data)
 
         d = flatten_response(data)
         if field_tokens:

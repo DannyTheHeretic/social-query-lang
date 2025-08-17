@@ -15,6 +15,7 @@ STEALTH_BTN = None
 USERNAME_INPUT = None
 PASSWORD_INPUT = None
 AUTH_FORM = None
+STATUS_TEXT = None
 
 # authentication data
 auth_data = None
@@ -23,7 +24,7 @@ is_modal_visible = False
 
 def init_auth_modal() -> None:
     """Initialize the authentication modal."""
-    global AUTH_MODAL, LOGIN_BTN, STEALTH_BTN, USERNAME_INPUT, PASSWORD_INPUT, AUTH_FORM  # noqa: PLW0603
+    global AUTH_MODAL, LOGIN_BTN, STEALTH_BTN, USERNAME_INPUT, PASSWORD_INPUT, AUTH_FORM, STATUS_TEXT  # noqa: PLW0603
 
     AUTH_MODAL = document.getElementById("auth-modal")
     LOGIN_BTN = document.getElementById("login-btn")
@@ -31,6 +32,7 @@ def init_auth_modal() -> None:
     USERNAME_INPUT = document.getElementById("bluesky-username")
     PASSWORD_INPUT = document.getElementById("bluesky-password")
     AUTH_FORM = document.getElementById("auth-form")
+    STATUS_TEXT = document.getElementById("security-notice")
 
     setup_event_listeners()
     print("Auth modal initialized")
@@ -130,10 +132,9 @@ def handle_authentication() -> None:
         auth_data = {"username": username, "password": password, "mode": "authenticated"}
         window.session = BskySession(username, password)
         is_logged_in = await window.session.login()
-        if is_logged_in:
-            print("logged in")
-        else:
-            print("No Log IN")  # TODO: Handle the Failed Auth System
+        if not is_logged_in:
+            handle_failed_auth()
+            return
         LOGIN_BTN.innerHTML = "AUTHENTICATED ✓"
         LOGIN_BTN.style.background = "#004400"
 
@@ -144,6 +145,24 @@ def handle_authentication() -> None:
         set_timeout(create_proxy(finish_auth), 1000)
 
     set_timeout(create_proxy(complete_auth), 2000)
+
+
+def handle_failed_auth() -> None:
+    """Handle a failed login."""
+    LOGIN_BTN.disabled = False
+    LOGIN_BTN.innerHTML = "LOGIN"
+    USERNAME_INPUT.style.borderColor = "#ff0000"
+    PASSWORD_INPUT.style.borderColor = "#ff0000"
+    PASSWORD_INPUT.value = ""
+    STATUS_TEXT.innerText = "Incorrect Username or Password."
+
+    def reset_status() -> None:
+        STATUS_TEXT.innerText = "Your credentials are processed locally and never stored permanently. \
+        Stealth mode allows read-only access to public posts."
+        USERNAME_INPUT.style.borderColor = "#00ff00"
+        PASSWORD_INPUT.style.borderColor = "#00ff00"
+
+    set_timeout(create_proxy(reset_status), 2000)
 
 
 def handle_stealth_mode() -> None:

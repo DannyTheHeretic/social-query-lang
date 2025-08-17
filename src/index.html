@@ -7,6 +7,7 @@
     <script src="https://cdn.jsdelivr.net/pyodide/v0.28.1/full/pyodide.js"></script>
 
     <link rel="stylesheet" href="styles.css" />
+    <link rel="icon" type="image/x-icon" href="favicon.png">
   </head>
 
   <body class="crt">
@@ -82,6 +83,23 @@
       </div>
     </div>
 
+    <!-- image modal -->
+    <div class="image-modal" id="image-modal">
+      <div class="modal-container" id="image-modal-container">
+        <div class="modal-header">
+          <span class="modal-title">Image Viewer</span>
+          <span class="modal-close" id="image-modal-close">X</span>
+        </div>
+        <div class="modal-body" id="image-modal-body">
+          <strong id="image-alt-text"></strong>
+          <p id="ascii-display"> </p>
+          <div class="modal-footer">
+            <a id="image-modal-full-link" href="" target="_blank">Open Original</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- bluesky auth modal -->
     <div class="auth-modal" id="auth-modal">
       <div class="modal-container">
@@ -126,7 +144,7 @@
               </button>
             </div>
 
-            <div class="security-notice">
+            <div class="security-notice" id="security-notice">
               Your credentials are processed locally and never stored permanently.
               Stealth mode allows read-only access to public posts.
             </div>
@@ -185,10 +203,11 @@
           }
 
           console.log("Loading setup script...");
+          await pyodide.loadPackage("micropip")
+
           if (SHOW_BOOT) {
             window.bootProgress.updateProgress(15);
           }
-
           await pyodide.runPythonAsync(`
             from pyodide.http import pyfetch
             response = await pyfetch("./setup.py")

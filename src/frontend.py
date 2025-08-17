@@ -4,6 +4,8 @@ from js import Element, Event, Math, document
 from pyodide.ffi import create_proxy
 from pyodide.ffi.wrappers import set_interval, set_timeout
 
+from image_modal import show_image_modal
+
 # constants for random effects
 ELECTRIC_WAVE_PROBABILITY = 0.03
 SCREEN_FLICKER_PROBABILITY = 0.05
@@ -134,6 +136,43 @@ def _create_table_headers(headers: list) -> None:
     TABLE_HEAD.appendChild(header_row)
 
 
+EMBED_IMAGE_LEN = 3
+
+
+def _handle_image(image: str) -> Element:
+    """Take in an image string and create the hyperlink element.
+
+    The string is expected to be either 1 link or a comma-separated list of 3.
+    """
+    items = image.split(",")
+    thumbnail_link = items[0]
+    full_size_link = ""
+    alt_text = ""
+    # handle embedded images vs profile pics
+    if len(items) == EMBED_IMAGE_LEN:
+        full_size_link = items[1]
+        alt_text = items[2]
+    hyperlink = document.createElement("a")
+    hyperlink.href = "#"
+    hyperlink.textContent = "Image"
+
+    def create_click_handler(img_url: str, fullsize_url: str, alt: str) -> callable:
+        """Capture the image value.
+
+        without this there is a weird issue where all of the images are the same.
+        """
+
+        async def _handler(
+            _: Event, img_url: str = img_url, fullsize_url: str = fullsize_url, alt: str = alt
+        ) -> callable:
+            await show_image_modal(img_url, fullsize_url, alt)
+
+        return _handler
+
+    hyperlink.addEventListener("click", create_proxy(create_click_handler(thumbnail_link, full_size_link, alt_text)))
+    return hyperlink
+
+
 def _create_table_rows(headers: list, rows: list[dict]) -> None:
     """Create table rows with appearing effect."""
     for row_index, row_data in enumerate(rows):
@@ -143,7 +182,14 @@ def _create_table_rows(headers: list, rows: list[dict]) -> None:
         cell_values = [str(row_data.pop(header, "")) for header in headers]
         for cell_data in cell_values:
             td = document.createElement("td")
-            td.textContent = str(cell_data) if cell_data else ""
+            # handle image links
+            if cell_data.startswith("https://cdn.bsky.app/img/"):
+                images = cell_data.split(" | ")
+                for image in images:
+                    image_element = _handle_image(image)
+                    td.append(image_element)
+            else:
+                td.textContent = str(cell_data) if cell_data else ""
             tr.appendChild(td)
 
         TABLE_BODY.appendChild(tr)

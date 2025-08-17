@@ -610,6 +610,74 @@ body {
   }
 }
 
+#image-modal {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  height: 85vh;
+  width: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  display: none;
+  text-align: center;
+  overflow: scroll;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+#image-modal-container {
+  max-width: 100%;
+}
+
+#image-modal-close {
+  cursor: pointer;
+  float: right;
+}
+
+#ascii-display {
+  width: 100ch;
+  font-size: 8px;
+  margin: 0 auto 20px auto;
+  text-align: center;
+  display: block;
+}
+
+#image-alt-text {
+  display: block;
+  margin-top: 15px;
+  margin-bottom: 20px;
+  color: #00ff00;
+  font-size: 18px;
+  padding: 0 10px;
+}
+
+.modal-footer {
+  margin-top: auto;
+  text-align: center;
+  padding: 10px;
+  border-top: 1px solid #004400;
+}
+
+#image-modal-full-link {
+  font-size: 10px;
+  color: #66ff66;
+  text-decoration: none;
+  padding: 4px 8px;
+  border: 1px solid #004400;
+  background: #001100;
+  transition: all 0.2s ease;
+}
+
+#image-modal-full-link:hover {
+  background: #002200;
+  border-color: #00ff00;
+  color: #00ff00;
+}
+
+#image-modal::-webkit-scrollbar {
+  display: none;
+}
+
 .auth-modal {
   position: fixed;
   top: 0;
