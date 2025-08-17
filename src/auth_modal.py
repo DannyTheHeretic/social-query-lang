@@ -262,7 +262,11 @@ def show_input_error() -> None:
 
 def on_auth_complete(auth_result: dict) -> None:
     """Complete authentication and show interface."""
-    print(f"Authentication completed: {auth_result}")
+    safe_to_print = auth_result.copy()
+
+    if safe_to_print["mode"] != "stealth":
+        safe_to_print["password"] = "********"  # noqa: S105
+    print(f"Authentication completed: {safe_to_print}")
 
     # update global JavaScript state
     if hasattr(window, "AppState"):
