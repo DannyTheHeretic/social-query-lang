@@ -1,9 +1,9 @@
 """The main script file for Pyodide."""
 
 import frontend
-from frontend import CLEAR_BUTTON, EXECUTE_BUTTON, clear_interface, update_table
+from frontend import CLEAR_BUTTON, EXECUTE_BUTTON, QUERY_INPUT, clear_interface, update_table
 from js import Event, document, window
-from parser import ParentKind, Token, TokenKind, Tree, parse, tokenize
+from parser import Parent, ParentKind, Token, TokenKind, Tree, parse, tokenize
 from pyodide.ffi import create_proxy
 from pyodide.ffi.wrappers import set_timeout
 
@@ -161,10 +161,9 @@ def extract_table(tree: Tree) -> str:
 
 async def parse_input(_: Event) -> None:
     """Start of the parser."""
-    query = document.getElementById("query-input").value.strip()
-
-    if not query:
-        frontend.update_status("Enter a SQL query to execute", "warning")
+    query = QUERY_INPUT.value.strip()
+    tree = parse(tokenize(query))
+    if not check_query(tree):
         return
 
     clean_query = query.upper().replace(";", "").replace(",", "").strip()
@@ -172,11 +171,10 @@ async def parse_input(_: Event) -> None:
         blue_screen_of_death()
         return
 
-    tree: Tree = parse(tokenize(query))
     await sql_to_api_handler(tree)
 
 
-async def processor(api: tuple[str, str], table: str, limit: int | None) -> dict:  # noqa: C901, PLR0912
+async def processor(api: tuple[str, str], table: str, limit: int | None) -> dict:  # noqa: C901, PLR0912, PLR0915
     """Process the sql statements into a api call."""
     val = {}
     if table == "feed":
@@ -343,5 +341,32 @@ async def sql_to_api_handler(tree: Tree) -> dict:
     return val
 
 
+async def check_query_input(_: Event) -> None:
+    """Check the query that is currently input."""
+    check_query(parse(tokenize(QUERY_INPUT.value.strip())))
+
+
+def check_query(tree: Tree) -> bool:
+    """Check a given query and update the status bar."""
+    errors = []
+    _check_query(tree, errors)
+    if errors:
+        frontend.update_status("\n".join(errors), "error")
+        return False
+    frontend.update_status("Query is OK", "success")
+    return True
+
+
+def _check_query(tree: Tree, errors: list[str]) -> None:
+    """Check a given query recursively."""
+    errors.extend([f"- {error}" for error in tree.errors])
+    if isinstance(tree, Parent):
+        for child in tree.children:
+            _check_query(child, errors)
+    if tree.kind is ParentKind.ERROR_TREE:
+        errors.append("- large error")
+
+
 EXECUTE_BUTTON.addEventListener("click", create_proxy(parse_input))
 CLEAR_BUTTON.addEventListener("click", create_proxy(clear_interface))
+QUERY_INPUT.addEventListener("keydown", create_proxy(check_query_input))

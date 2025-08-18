@@ -11,7 +11,7 @@ async def setup_pyodide_scripts() -> None:
     response = await pyfetch("./core/functions.py")
     with Path.open("functions.py", "wb") as f:
         f.write(await response.bytes())
-    # uncomment when you add the parser in
+
     response = await pyfetch("./core/parser.py")
     with Path.open("parser.py", "wb") as f:
         f.write(await response.bytes())
