@@ -179,7 +179,7 @@ async def processor(api: tuple[str, str], table: str) -> dict:  # noqa: PLR0912 
         feed = await window.session.get_timeline()
         val = feed["feed"]
     elif table == "profile":
-        if api[0] == "actors":
+        if api[0] == "actor":
             feed = await window.session.get_profile(api[2])
             val = feed
         else:
@@ -188,7 +188,7 @@ async def processor(api: tuple[str, str], table: str) -> dict:  # noqa: PLR0912 
                 return "stealth_error"
             val = feed
     elif table == "suggestions":
-        if api[0] == "actors":
+        if api[0] == "actor":
             feed = await window.session.get_suggestions(api[2])
             val = feed["actors"]
         else:
