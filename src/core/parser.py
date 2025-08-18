@@ -26,6 +26,7 @@ class TokenKind(Enum):
     SELECT = auto()
     FROM = auto()
     WHERE = auto()
+    LIMIT = auto()
 
     # literals
     STRING = auto()
@@ -50,6 +51,7 @@ KEYWORDS = {
     "FROM": TokenKind.FROM,
     "WHERE": TokenKind.WHERE,
     "AND": TokenKind.AND,
+    "LIMIT": TokenKind.LIMIT,
 }
 
 
@@ -223,6 +225,7 @@ class ParentKind(Enum):
     FIELD_LIST = auto()
     FROM_CLAUSE = auto()
     WHERE_CLAUSE = auto()
+    LIMIT_CLAUSE = auto()
     EXPR_NAME = auto()
     EXPR_STRING = auto()
     EXPR_INTEGER = auto()
@@ -309,6 +312,12 @@ def _parse_select_stmt(parser: Parser) -> None:
 
         _parse_expr(parser)
         parser.close(ParentKind.WHERE_CLAUSE, where_start)
+
+    if parser.at(TokenKind.LIMIT):
+        limit_start = parser.open()
+        parser.advance()
+        parser.expect(TokenKind.INTEGER, "expected an integer")
+        parser.close(ParentKind.LIMIT_CLAUSE, limit_start)
 
     parser.close(ParentKind.SELECT_STMT, start)
 
@@ -523,6 +532,21 @@ def test_parse_simple() -> None:
                             GT (">")
                             EXPR_INTEGER
                                 INTEGER ("10")
+            """).strip()
+    )
+
+    assert (
+        stringify_tree(parse(tokenize("SELECT 4 LIMIT 0")))
+        == textwrap.dedent("""
+        FILE
+            SELECT_STMT
+                SELECT ("SELECT")
+                FIELD_LIST
+                    EXPR_INTEGER
+                        INTEGER ("4")
+                LIMIT_CLAUSE
+                    LIMIT ("LIMIT")
+                    INTEGER ("0")
             """).strip()
     )
 
