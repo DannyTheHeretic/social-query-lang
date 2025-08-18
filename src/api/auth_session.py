@@ -4,6 +4,8 @@ from typing import Literal
 
 from pyodide.http import FetchResponse, pyfetch  # The system we will actually use
 
+LIMIT = 50  # The default limit amount
+
 
 class PyfetchSession:
     """Pyfetch Session, emulating the request Session."""
@@ -149,7 +151,7 @@ class BskySession:
         )
         return await response.json()
 
-    async def get_suggestions(self, limit: int, cursor: str = "") -> dict:
+    async def get_suggestions(self, limit: int = LIMIT, cursor: str = "") -> dict:
         """Get the logged in users suggestion."""
         endpoint = f"{self.pds_host}/xrpc/app.bsky.actor.getSuggestions?limit={limit}&cursor={cursor}"
         response = await self.client.get(
@@ -157,7 +159,7 @@ class BskySession:
         )
         return await response.json()
 
-    async def search_actors(self, q: str, limit: int, cursor: str = "") -> dict:
+    async def search_actors(self, q: str, limit: int = LIMIT, cursor: str = "") -> dict:
         """Search for actors."""
         endpoint = f"{self.pds_host}/xrpc/app.bsky.actor.searchActors?q={q}&limit={limit}&cursor={cursor}"
         response = await self.client.get(
@@ -165,7 +167,7 @@ class BskySession:
         )
         return await response.json()
 
-    async def get_actor_likes(self, actor: str, limit: int, cursor: str = "") -> dict:  # Requires Auth
+    async def get_actor_likes(self, actor: str, limit: int = LIMIT, cursor: str = "") -> dict:  # Requires Auth
         """Get a given actors likes."""
         endpoint = f"{self.pds_host}/xrpc/app.bsky.feed.getActorLikes?actor={actor}&limit={limit}&cursor={cursor}"
         response = await self.client.get(
@@ -173,7 +175,7 @@ class BskySession:
         )
         return await response.json()
 
-    async def get_author_feed(self, actor: str, limit: int) -> dict:
+    async def get_author_feed(self, actor: str, limit: int = LIMIT) -> dict:
         """Get a specific user feed."""
         endpoint = f"{self.pds_host}/xrpc/app.bsky.feed.getAuthorFeed?actor={actor}&limit={limit}"
         response = await self.client.get(
@@ -181,7 +183,7 @@ class BskySession:
         )
         return await response.json()
 
-    async def get_feed(self, feed: str, limit: int, cursor: str = "") -> dict:
+    async def get_feed(self, feed: str, limit: int = LIMIT, cursor: str = "") -> dict:
         """Get a specified feed."""
         endpoint = f"{self.pds_host}/xrpc/app.bsky.feed.getFeed?feed={feed}&limit={limit}&cursor={cursor}"
         response = await self.client.get(
@@ -189,7 +191,7 @@ class BskySession:
         )
         return await response.json()
 
-    async def get_suggested_feeds(self, limit: int, cursor: str = "") -> dict:
+    async def get_suggested_feeds(self, limit: int = LIMIT, cursor: str = "") -> dict:
         """Get suggested feeds."""
         endpoint = f"{self.pds_host}/xrpc/app.bsky.feed.getSuggestedFeeds?limit={limit}&cursor={cursor}"
         response = await self.client.get(
@@ -209,7 +211,7 @@ class BskySession:
     async def search_posts(  # noqa: PLR0913
         self,
         q: str,
-        limit: int,
+        limit: int = LIMIT,
         sort: Literal["top", "latest"] = "latest",
         since: str = "",
         until: str = "",
@@ -243,7 +245,7 @@ class BskySession:
         )
         return await response.json()
 
-    async def get_followers(self, actor: str, limit: int, cursor: str = "") -> dict:
+    async def get_followers(self, actor: str, limit: int = LIMIT, cursor: str = "") -> dict:
         """Get a users followers."""
         endpoint = f"{self.pds_host}/xrpc/app.bsky.graph.getFollowers?actor={actor}&limit={limit}&cursor={cursor}"
         response = await self.client.get(
@@ -251,7 +253,7 @@ class BskySession:
         )
         return await response.json()
 
-    async def get_follows(self, actor: str, limit: int, cursor: str = "") -> dict:
+    async def get_follows(self, actor: str, limit: int = LIMIT, cursor: str = "") -> dict:
         """Get a users follows."""
         endpoint = f"{self.pds_host}/xrpc/app.bsky.graph.getFollows?actor={actor}&limit={limit}&cursor={cursor}"
         response = await self.client.get(
@@ -259,7 +261,7 @@ class BskySession:
         )
         return await response.json()
 
-    async def get_mutual_follows(self, actor: str, limit: int, cursor: str = "") -> dict:
+    async def get_mutual_follows(self, actor: str, limit: int = LIMIT, cursor: str = "") -> dict:
         """Get a users mutual follows."""
         endpoint = f"{self.pds_host}/xrpc/app.bsky.graph.getKnownFollowers?actor={actor}&limit={limit}&cursor={cursor}"
         response = await self.client.get(
