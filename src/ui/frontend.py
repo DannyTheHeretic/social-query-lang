@@ -72,7 +72,6 @@ def show_empty_table() -> int:
     empty_row.appendChild(empty_cell)
 
     TABLE_HEAD.innerHTML = "<tr><td>No Columns</td></tr>"
-    print(TABLE_HEAD)
     TABLE_BODY.replaceChildren(empty_row)
 
     TABLE_HEAD.style.opacity = "1"
