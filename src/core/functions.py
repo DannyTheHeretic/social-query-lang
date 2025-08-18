@@ -162,13 +162,15 @@ def extract_table(tree: Tree) -> str:
 async def parse_input(_: Event) -> None:
     """Start of the parser."""
     query = QUERY_INPUT.value.strip()
-    tree = parse(tokenize(query))
-    if not check_query(tree):
-        return
 
     clean_query = query.upper().replace(";", "").replace(",", "").strip()
     if "DROP TABLE USERS" in clean_query:
+        frontend.update_status("what could go wrong?", "warning")
         blue_screen_of_death()
+        return
+
+    tree = parse(tokenize(query))
+    if not check_query(tree):
         return
 
     await sql_to_api_handler(tree)
