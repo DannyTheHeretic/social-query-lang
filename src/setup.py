@@ -8,7 +8,7 @@ from pyodide.http import pyfetch
 
 async def setup_pyodide_scripts() -> None:
     """Script to do everything for pyodide."""
-    response = await pyfetch("./functions.py")
+    response = await pyfetch("./core/functions.py")
     with Path.open("functions.py", "wb") as f:
         f.write(await response.bytes())
     # uncomment when you add the parser in
@@ -29,6 +29,6 @@ async def setup_pyodide_scripts() -> None:
     with Path.open("auth_session.py", "wb") as f:
         f.write(await response.bytes())
 
-    response = await pyfetch("./api/auth_modal.py")
+    response = await pyfetch("./ui/auth_modal.py")
     with Path.open("auth_modal.py", "wb") as f:
         f.write(await response.bytes())
