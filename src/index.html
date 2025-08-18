@@ -6,8 +6,8 @@
     <title>The Social Query Language v1.0</title>
     <script src="https://cdn.jsdelivr.net/pyodide/v0.28.1/full/pyodide.js"></script>
 
-    <link rel="stylesheet" href="styles.css" />
-    <link rel="icon" type="image/x-icon" href="favicon.png">
+    <link rel="stylesheet" href="web/styles.css" />
+    <link rel="icon" type="image/x-icon" href="web/favicon.png">
   </head>
 
   <body class="crt">
@@ -159,7 +159,7 @@
       </div>
     </div>
 
-    <script src="boot.js"></script>
+    <script src="web/boot.js"></script>
     <script type="text/javascript">
       const SHOW_BOOT = true; // false to skip boot sequence
       let pyodide;
@@ -216,7 +216,7 @@
           }
           await pyodide.runPythonAsync(`
             from pyodide.http import pyfetch
-            response = await pyfetch("./setup.py")
+            response = await pyfetch("./core/setup.py")
             with open("setup.py", "wb") as f:
                 f.write(await response.bytes())
           `);

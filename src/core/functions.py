@@ -1,12 +1,11 @@
 """The main script file for Pyodide."""
 
-from js import Event, document, window
-from pyodide.ffi import create_proxy
-from pyodide.ffi.wrappers import set_timeout
-
 import frontend
 from frontend import CLEAR_BUTTON, EXECUTE_BUTTON, clear_interface, update_table
+from js import Event, document, window
 from parser import ParentKind, Token, TokenKind, Tree, parse, tokenize
+from pyodide.ffi import create_proxy
+from pyodide.ffi.wrappers import set_timeout
 
 
 def flatten_response(data: dict) -> dict:
@@ -166,7 +165,7 @@ async def parse_input(_: Event) -> None:
     await sql_to_api_handler(tree)
 
 
-async def processor(api: tuple[str, str], table: str) -> dict:  # noqa: PLR0912 C901 PLR0915
+async def processor(api: tuple[str, str], table: str) -> dict:  # noqa: C901, PLR0912, PLR0915
     """Process the sql statements into a api call."""
     val = {}
     if table == "feed":
@@ -176,11 +175,15 @@ async def processor(api: tuple[str, str], table: str) -> dict:  # noqa: PLR0912 
         elif api[0] == "author":
             feed = await window.session.get_author_feed(api[2])
             val = feed["feed"]
+        elif api[0] == "feed":
+            feed = await window.session.get_feed(api[2])
+            val = feed["feed"]
+
     elif table == "timeline":
         feed = await window.session.get_timeline()
         val = feed["feed"]
     elif table == "profile":
-        if api[0] == "actors":
+        if api[0] in ["actor", "author"]:
             feed = await window.session.get_profile(api[2])
             val = feed
         else:
@@ -189,33 +192,32 @@ async def processor(api: tuple[str, str], table: str) -> dict:  # noqa: PLR0912 
                 return "stealth_error"
             val = feed
     elif table == "suggestions":
-        if api[0] == "actors":
-            feed = await window.session.get_suggestions(api[2])
-            val = feed["actors"]
-        else:
-            feed = await window.session.get_suggested_feeds()
-            val = feed["feeds"]
+        feed = await window.session.get_suggestions()
+        val = feed["actors"]
+    elif table == "suggested_feed":
+        feed = await window.session.get_suggested_feeds()
+        val = feed["feeds"]
     elif table == "likes":
-        if api[0] == "actor":
+        if api[0] in ["actor", "author"]:
             feed = await window.session.get_actor_likes(api[2])
             val = feed["feeds"]
         else:
             pass
     elif table == "followers":
-        if api[0] == "actor":
+        if api[0] in ["actor", "author"]:
             feed = await window.session.get_followers(api[2])
             val = feed["followers"]
         else:
             pass
     elif table == "following":
-        if api[0] == "actor":
+        if api[0] in ["actor", "author"]:
             feed = await window.session.get_following(api[2])
             val = feed["followers"]
         else:
             pass
     elif table == "mutuals":
-        if api[0] == "actor":
-            feed = await window.session.get_mutual_followers(api[2])
+        if api[0] in ["actor", "author"]:
+            feed = await window.session.get_mutual_follows(api[2])
             val = feed["followers"]
         else:
             pass
@@ -271,14 +273,14 @@ async def sql_to_api_handler(tokens: Tree) -> dict:
 
     val = await processor(api, table)
     if not val:
-        frontend.clear_interface("")
-        frontend.update_status(f"Error getting from {table}", "error")
+        frontend.show_empty_table()
+        frontend.update_status(f"Error getting from {table}. Try: SELECT * FROM tables", "error")  # noqa: S608 Not sql injection
         frontend.trigger_electric_wave()
         return {}
 
     # Handle stealth mode error for profile queries
     if val == "stealth_error":
-        frontend.clear_interface("")
+        frontend.show_empty_table()
         frontend.update_status(
             "Cannot get own profile in stealth mode. Try: SELECT * FROM profile WHERE actors = 'username.bsky.social'",
             "warning",
