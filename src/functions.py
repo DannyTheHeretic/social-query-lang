@@ -1,12 +1,11 @@
 """The main script file for Pyodide."""
 
-from js import Event, document, window
-from pyodide.ffi import create_proxy
-from pyodide.ffi.wrappers import set_timeout
-
 import frontend
 from frontend import CLEAR_BUTTON, EXECUTE_BUTTON, clear_interface, update_table
+from js import Event, document, window
 from parser import ParentKind, Token, TokenKind, Tree, parse, tokenize
+from pyodide.ffi import create_proxy
+from pyodide.ffi.wrappers import set_timeout
 
 
 def flatten_response(data: dict) -> dict:
