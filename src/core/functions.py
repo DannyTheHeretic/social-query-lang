@@ -194,7 +194,7 @@ async def processor(api: tuple[str, str], table: str) -> dict:  # noqa: C901, PL
     elif table == "suggestions":
         feed = await window.session.get_suggestions()
         val = feed["actors"]
-    elif api[0] == "suggested_feed":
+    elif table == "suggested_feed":
         feed = await window.session.get_suggested_feeds()
         val = feed["feeds"]
     elif table == "likes":
@@ -273,7 +273,7 @@ async def sql_to_api_handler(tokens: Tree) -> dict:
 
     val = await processor(api, table)
     if not val:
-        frontend.show_empty_table("")
+        frontend.show_empty_table()
         frontend.update_status(f"Error getting from {table}. Try: SELECT * FROM tables", "error")  # noqa: S608 Not sql injection
         frontend.trigger_electric_wave()
         return {}
