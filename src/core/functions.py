@@ -279,7 +279,8 @@ async def sql_to_api_handler(tree: Tree) -> dict:
         # No Where Expression Matches
         api = ["", ""]
 
-    val = await processor(api, table, get_limit(tree))
+    limit = get_limit(tree)
+    val = await processor(api, table, limit if limit is not None else 50)
     if not val:
         frontend.show_empty_table()
         frontend.update_status(f"Error getting from {table}. Try: SELECT * FROM tables", "error")  # noqa: S608 Not sql injection

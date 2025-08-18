@@ -4,8 +4,6 @@ from typing import Literal
 
 from pyodide.http import FetchResponse, pyfetch  # The system we will actually use
 
-LIMIT = 50
-
 
 class PyfetchSession:
     """Pyfetch Session, emulating the request Session."""
@@ -151,66 +149,48 @@ class BskySession:
         )
         return await response.json()
 
-    async def get_suggestions(self, limit: int | None = None, cursor: str = "") -> dict:
+    async def get_suggestions(self, limit: int, cursor: str = "") -> dict:
         """Get the logged in users suggestion."""
-        if limit is None:
-            limit = LIMIT
-
         endpoint = f"{self.pds_host}/xrpc/app.bsky.actor.getSuggestions?limit={limit}&cursor={cursor}"
         response = await self.client.get(
             endpoint,
         )
         return await response.json()
 
-    async def search_actors(self, q: str, limit: int | None = None, cursor: str = "") -> dict:
+    async def search_actors(self, q: str, limit: int, cursor: str = "") -> dict:
         """Search for actors."""
-        if limit is None:
-            limit = LIMIT
-
         endpoint = f"{self.pds_host}/xrpc/app.bsky.actor.searchActors?q={q}&limit={limit}&cursor={cursor}"
         response = await self.client.get(
             endpoint,
         )
         return await response.json()
 
-    async def get_actor_likes(self, actor: str, limit: int | None = None, cursor: str = "") -> dict:  # Requires Auth
+    async def get_actor_likes(self, actor: str, limit: int, cursor: str = "") -> dict:  # Requires Auth
         """Get a given actors likes."""
-        if limit is None:
-            limit = LIMIT
-
         endpoint = f"{self.pds_host}/xrpc/app.bsky.feed.getActorLikes?actor={actor}&limit={limit}&cursor={cursor}"
         response = await self.client.get(
             endpoint,
         )
         return await response.json()
 
-    async def get_author_feed(self, actor: str, limit: int | None = None) -> dict:
+    async def get_author_feed(self, actor: str, limit: int) -> dict:
         """Get a specific user feed."""
-        if limit is None:
-            limit = LIMIT
-
         endpoint = f"{self.pds_host}/xrpc/app.bsky.feed.getAuthorFeed?actor={actor}&limit={limit}"
         response = await self.client.get(
             endpoint,
         )
         return await response.json()
 
-    async def get_feed(self, feed: str, limit: int | None = None, cursor: str = "") -> dict:
+    async def get_feed(self, feed: str, limit: int, cursor: str = "") -> dict:
         """Get a specified feed."""
-        if limit is None:
-            limit = LIMIT
-
         endpoint = f"{self.pds_host}/xrpc/app.bsky.feed.getFeed?feed={feed}&limit={limit}&cursor={cursor}"
         response = await self.client.get(
             endpoint,
         )
         return await response.json()
 
-    async def get_suggested_feeds(self, limit: int | None = None, cursor: str = "") -> dict:
+    async def get_suggested_feeds(self, limit: int, cursor: str = "") -> dict:
         """Get suggested feeds."""
-        if limit is None:
-            limit = LIMIT
-
         endpoint = f"{self.pds_host}/xrpc/app.bsky.feed.getSuggestedFeeds?limit={limit}&cursor={cursor}"
         response = await self.client.get(
             endpoint,
@@ -229,13 +209,13 @@ class BskySession:
     async def search_posts(  # noqa: PLR0913
         self,
         q: str,
+        limit: int,
         sort: Literal["top", "latest"] = "latest",
         since: str = "",
         until: str = "",
         mentions: str = "",
         author: str = "",
         tag: str = "",
-        limit: int | None = None,
         cursor: str = "",
     ) -> dict:
         """Search for bluesky posts.
@@ -252,9 +232,6 @@ class BskySession:
             cursor (str, optional): Bsky Cursor. Defaults to "".
 
         """
-        if limit is None:
-            limit = LIMIT
-
         endpoint = (
             f"{self.pds_host}/xrpc/app.bsky.feed.searchPosts"
             f"?q={q}&sort={sort}&since={since}&until={until}"
@@ -266,33 +243,24 @@ class BskySession:
         )
         return await response.json()
 
-    async def get_followers(self, actor: str, limit: int | None = None, cursor: str = "") -> dict:
+    async def get_followers(self, actor: str, limit: int, cursor: str = "") -> dict:
         """Get a users followers."""
-        if limit is None:
-            limit = LIMIT
-
         endpoint = f"{self.pds_host}/xrpc/app.bsky.graph.getFollowers?actor={actor}&limit={limit}&cursor={cursor}"
         response = await self.client.get(
             endpoint,
         )
         return await response.json()
 
-    async def get_follows(self, actor: str, limit: int | None = None, cursor: str = "") -> dict:
+    async def get_follows(self, actor: str, limit: int, cursor: str = "") -> dict:
         """Get a users follows."""
-        if limit is None:
-            limit = LIMIT
-
         endpoint = f"{self.pds_host}/xrpc/app.bsky.graph.getFollows?actor={actor}&limit={limit}&cursor={cursor}"
         response = await self.client.get(
             endpoint,
         )
         return await response.json()
 
-    async def get_mutual_follows(self, actor: str, limit: int | None = None, cursor: str = "") -> dict:
+    async def get_mutual_follows(self, actor: str, limit: int, cursor: str = "") -> dict:
         """Get a users mutual follows."""
-        if limit is None:
-            limit = LIMIT
-
         endpoint = f"{self.pds_host}/xrpc/app.bsky.graph.getKnownFollowers?actor={actor}&limit={limit}&cursor={cursor}"
         response = await self.client.get(
             endpoint,
