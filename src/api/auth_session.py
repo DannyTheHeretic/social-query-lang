@@ -269,7 +269,7 @@ class BskySession:
 
     async def get_mutual_follows(self, actor: str, limit: int = 10, cursor: str = "") -> dict:
         """Get a users mutual follows."""
-        endpoint = f"{self.pds_host}/xrpc/app.bsky.graph.getKnownFollows?actor={actor}&limit={limit}&cursor={cursor}"
+        endpoint = f"{self.pds_host}/xrpc/app.bsky.graph.getKnownFollowers?actor={actor}&limit={limit}&cursor={cursor}"
         response = await self.client.get(
             endpoint,
         )

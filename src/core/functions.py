@@ -165,7 +165,7 @@ async def parse_input(_: Event) -> None:
     await sql_to_api_handler(tree)
 
 
-async def processor(api: tuple[str, str], table: str) -> dict:  # noqa: PLR0912 C901 PLR0915
+async def processor(api: tuple[str, str], table: str) -> dict:  # noqa: PLR0912 C901
     """Process the sql statements into a api call."""
     val = {}
     if table == "feed":
@@ -179,7 +179,7 @@ async def processor(api: tuple[str, str], table: str) -> dict:  # noqa: PLR0912 
         feed = await window.session.get_timeline()
         val = feed["feed"]
     elif table == "profile":
-        if api[0] == "actors":
+        if api[0] == "actor":
             feed = await window.session.get_profile(api[2])
             val = feed
         else:
@@ -188,12 +188,11 @@ async def processor(api: tuple[str, str], table: str) -> dict:  # noqa: PLR0912 
                 return "stealth_error"
             val = feed
     elif table == "suggestions":
-        if api[0] == "actors":
-            feed = await window.session.get_suggestions(api[2])
-            val = feed["actors"]
-        else:
-            feed = await window.session.get_suggested_feeds()
-            val = feed["feeds"]
+        feed = await window.session.get_suggestions()
+        val = feed["actors"]
+    elif api[0] == "suggested_feed":
+        feed = await window.session.get_suggested_feeds()
+        val = feed["feeds"]
     elif table == "likes":
         if api[0] == "actor":
             feed = await window.session.get_actor_likes(api[2])
@@ -214,7 +213,7 @@ async def processor(api: tuple[str, str], table: str) -> dict:  # noqa: PLR0912 
             pass
     elif table == "mutuals":
         if api[0] == "actor":
-            feed = await window.session.get_mutual_followers(api[2])
+            feed = await window.session.get_mutual_follows(api[2])
             val = feed["followers"]
         else:
             pass
