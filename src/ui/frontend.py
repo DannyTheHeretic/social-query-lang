@@ -1,10 +1,9 @@
 from typing import Literal
 
+from image_modal import show_image_modal
 from js import Element, Event, Math, document
 from pyodide.ffi import create_proxy
 from pyodide.ffi.wrappers import set_interval, set_timeout
-
-from image_modal import show_image_modal
 
 # constants for random effects
 ELECTRIC_WAVE_PROBABILITY = 0.03

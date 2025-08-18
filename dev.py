@@ -1,6 +1,6 @@
 import http.server
-import socketserver
 import os
+import socketserver
 import sys
 from pathlib import Path
 
@@ -26,4 +26,4 @@ except KeyboardInterrupt:
     print("\nServer stopped")
 except OSError as e:
     print(f"[-] Error: {e}")
-    print(f"[-] Try a different port: python dev.py --port 8001")
+    print("[-] Try a different port: python dev.py --port 8001")
