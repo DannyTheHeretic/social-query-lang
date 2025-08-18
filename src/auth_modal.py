@@ -12,6 +12,7 @@ from auth_session import BskySession
 AUTH_MODAL = None
 LOGIN_BTN = None
 STEALTH_BTN = None
+CRT_TOGGLE_BTN = None
 USERNAME_INPUT = None
 PASSWORD_INPUT = None
 AUTH_FORM = None
@@ -20,15 +21,17 @@ STATUS_TEXT = None
 # authentication data
 auth_data = None
 is_modal_visible = False
+crt_enabled = True  # CRT starts enabled by default
 
 
 def init_auth_modal() -> None:
     """Initialize the authentication modal."""
-    global AUTH_MODAL, LOGIN_BTN, STEALTH_BTN, USERNAME_INPUT, PASSWORD_INPUT, AUTH_FORM, STATUS_TEXT  # noqa: PLW0603
+    global AUTH_MODAL, LOGIN_BTN, STEALTH_BTN, USERNAME_INPUT, PASSWORD_INPUT, AUTH_FORM, STATUS_TEXT, CRT_TOGGLE_BTN  # noqa: PLW0603
 
     AUTH_MODAL = document.getElementById("auth-modal")
     LOGIN_BTN = document.getElementById("login-btn")
     STEALTH_BTN = document.getElementById("stealth-btn")
+    CRT_TOGGLE_BTN = document.getElementById("crt-toggle-btn")
     USERNAME_INPUT = document.getElementById("bluesky-username")
     PASSWORD_INPUT = document.getElementById("bluesky-password")
     AUTH_FORM = document.getElementById("auth-form")
@@ -44,6 +47,14 @@ def setup_event_listeners() -> None:
     PASSWORD_INPUT.addEventListener("input", create_proxy(on_input_change))
     AUTH_FORM.addEventListener("submit", create_proxy(on_form_submit))
     STEALTH_BTN.addEventListener("click", create_proxy(on_stealth_click))
+
+    # Configure CRT toggle button event listener
+    if CRT_TOGGLE_BTN:
+        CRT_TOGGLE_BTN.addEventListener("click", create_proxy(on_crt_toggle_click))
+        print("CRT toggle event listener attached")
+    else:
+        print("ERROR: CRT toggle button not found!")
+
     document.addEventListener("keydown", create_proxy(on_keydown))
 
 
@@ -69,6 +80,12 @@ def on_stealth_click(_event: Event) -> None:
     handle_stealth_mode()
 
 
+def on_crt_toggle_click(_event: Event) -> None:
+    """Handle CRT effect toggle."""
+    print("CRT toggle button clicked")
+    toggle_crt_effect()
+
+
 def on_keydown(event: Event) -> None:
     """Keyboard shortcuts - not visually indicated *yet?."""
     if not is_modal_visible:
@@ -78,6 +95,45 @@ def on_keydown(event: Event) -> None:
         handle_stealth_mode()
     elif event.key == "Enter" and (event.ctrlKey or event.metaKey):
         handle_authentication()
+
+
+def toggle_crt_effect() -> None:
+    """Toggle the CRT effect on/off."""
+    global crt_enabled  # noqa: PLW0603
+
+    print(f"Toggle CRT called. Current state: {crt_enabled}")
+
+    if not CRT_TOGGLE_BTN:
+        print("ERROR: CRT toggle button is None!")
+        return
+
+    body = document.body
+
+    if crt_enabled:
+        # Disable CRT effect
+        body.classList.remove("crt")
+        CRT_TOGGLE_BTN.innerHTML = "CRT EFFECT: OFF"
+        CRT_TOGGLE_BTN.style.background = "#333300"
+        CRT_TOGGLE_BTN.style.borderColor = "#ffff00"
+        CRT_TOGGLE_BTN.style.color = "#ffff00"
+        crt_enabled = False
+        print("CRT effect disabled")
+    else:
+        # Enable CRT effect
+        body.classList.add("crt")
+        CRT_TOGGLE_BTN.innerHTML = "CRT EFFECT: ON"
+        CRT_TOGGLE_BTN.style.background = "#003300"
+        CRT_TOGGLE_BTN.style.borderColor = "#00ff00"
+        CRT_TOGGLE_BTN.style.color = "#00ff00"
+        crt_enabled = True
+        print("CRT effect enabled")
+
+    CRT_TOGGLE_BTN.style.transform = "scale(0.95)"
+
+    def reset_scale() -> None:
+        CRT_TOGGLE_BTN.style.transform = "scale(1.0)"
+
+    set_timeout(create_proxy(reset_scale), 150)
 
 
 def show_modal() -> None:
@@ -206,7 +262,11 @@ def show_input_error() -> None:
 
 def on_auth_complete(auth_result: dict) -> None:
     """Complete authentication and show interface."""
-    print(f"Authentication completed: {auth_result}")
+    safe_to_print = auth_result.copy()
+
+    if safe_to_print["mode"] != "stealth":
+        safe_to_print["password"] = "********"  # noqa: S105
+    print(f"Authentication completed: {safe_to_print}")
 
     # update global JavaScript state
     if hasattr(window, "AppState"):
@@ -266,6 +326,16 @@ def get_auth_mode() -> str:
 def is_stealth_mode() -> bool:
     """Verify if it is in stealth mode."""
     return auth_data is not None and auth_data.get("mode") == "stealth"
+
+
+def is_crt_enabled() -> bool:
+    """Check if CRT effect is currently enabled."""
+    return crt_enabled
+
+
+def get_crt_status() -> str:
+    """Get current CRT status as string."""
+    return "ON" if crt_enabled else "OFF"
 
 
 def show_auth_modal_after_boot() -> None:
