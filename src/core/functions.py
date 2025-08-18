@@ -111,6 +111,17 @@ def walk_where(node: Tree) -> list[tuple | str]:
     return []
 
 
+def get_limit(node: Tree) -> int | None:
+    """Get what the LIMIT clause of this SQL query contains."""
+    assert node.kind is ParentKind.FILE
+    stmt = node.children[0]
+    for it in stmt.children:
+        if it.kind is ParentKind.LIMIT_CLAUSE:
+            return int(it.children[1].text)
+
+    return None
+
+
 def extract_where(tree: Tree) -> tuple[str, str] | None:
     """Extract the where clause from the tree."""
     if not tree.kind == ParentKind.FILE:
@@ -165,18 +176,15 @@ async def parse_input(_: Event) -> None:
     await sql_to_api_handler(tree)
 
 
-async def processor(api: tuple[str, str], table: str) -> dict:  # noqa: C901, PLR0912, PLR0915
+async def processor(api: tuple[str, str], table: str, limit: int | None) -> dict:  # noqa: C901, PLR0912
     """Process the sql statements into a api call."""
     val = {}
     if table == "feed":
-        if api[0] == "actor":
-            feed = await window.session.get_actor_feeds(api[2])
-            val = feed["feeds"]
-        elif api[0] == "author":
-            feed = await window.session.get_author_feed(api[2])
+        if api[0] in ["actor", "author"]:
+            feed = await window.session.get_author_feed(api[2], limit=limit)
             val = feed["feed"]
         elif api[0] == "feed":
-            feed = await window.session.get_feed(api[2])
+            feed = await window.session.get_feed(api[2], limit=limit)
             val = feed["feed"]
 
     elif table == "timeline":
@@ -192,32 +200,32 @@ async def processor(api: tuple[str, str], table: str) -> dict:  # noqa: C901, PL
                 return "stealth_error"
             val = feed
     elif table == "suggestions":
-        feed = await window.session.get_suggestions()
+        feed = await window.session.get_suggestions(limit=limit)
         val = feed["actors"]
     elif table == "suggested_feed":
-        feed = await window.session.get_suggested_feeds()
+        feed = await window.session.get_suggested_feeds(limit=limit)
         val = feed["feeds"]
     elif table == "likes":
         if api[0] in ["actor", "author"]:
-            feed = await window.session.get_actor_likes(api[2])
+            feed = await window.session.get_actor_likes(api[2], limit=limit)
             val = feed["feeds"]
         else:
             pass
     elif table == "followers":
         if api[0] in ["actor", "author"]:
-            feed = await window.session.get_followers(api[2])
+            feed = await window.session.get_followers(api[2], limit=limit)
             val = feed["followers"]
         else:
             pass
     elif table == "following":
         if api[0] in ["actor", "author"]:
-            feed = await window.session.get_following(api[2])
+            feed = await window.session.get_follows(api[2], limit=limit)
             val = feed["followers"]
         else:
             pass
     elif table == "mutuals":
         if api[0] in ["actor", "author"]:
-            feed = await window.session.get_mutual_follows(api[2])
+            feed = await window.session.get_mutual_follows(api[2], limit=limit)
             val = feed["followers"]
         else:
             pass
@@ -271,11 +279,11 @@ def _extract_images_from_post(data: dict) -> str:
     return " | ".join(image_links)
 
 
-async def sql_to_api_handler(tokens: Tree) -> dict:
+async def sql_to_api_handler(tree: Tree) -> dict:
     """Handle going from SQL to the API."""
-    where_expr = extract_where(tokens)
-    table = extract_table(tokens)
-    fields = extract_fields(tokens)
+    where_expr = extract_where(tree)
+    table = extract_table(tree)
+    fields = extract_fields(tree)
     field_tokens = [i.children[0] for i in fields if i.kind != TokenKind.STAR]
 
     for i in where_expr:
@@ -286,7 +294,8 @@ async def sql_to_api_handler(tokens: Tree) -> dict:
         # No Where Expression Matches
         api = ["", ""]
 
-    val = await processor(api, table)
+    limit = get_limit(tree)
+    val = await processor(api, table, limit if limit is not None else 50)
     if not val:
         frontend.show_empty_table()
         frontend.update_status(f"Error getting from {table}. Try: SELECT * FROM tables", "error")  # noqa: S608 Not sql injection
