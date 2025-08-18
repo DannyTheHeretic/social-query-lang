@@ -216,7 +216,7 @@
           }
           await pyodide.runPythonAsync(`
             from pyodide.http import pyfetch
-            response = await pyfetch("./setup.py")
+            response = await pyfetch("./core/setup.py")
             with open("setup.py", "wb") as f:
                 f.write(await response.bytes())
           `);
