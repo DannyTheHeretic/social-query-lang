@@ -1,7 +1,6 @@
 # Imports
 import json
 from typing import Literal
-from urllib.parse import urlencode
 
 from pyodide.http import FetchResponse, pyfetch  # The system we will actually use
 
