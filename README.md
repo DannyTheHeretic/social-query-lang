@@ -1,37 +1,77 @@
-#  Social Query Language
+## The Social Query Language (SQL-BSky)
 
-An SQL interface for interacting with the Bluesky social network.
+[![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://python.org)
+[![BlueSky](https://img.shields.io/badge/BlueSky-AT_Protocol-00D4FF.svg)](https://bsky.app)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE.txt)
+[![Status](https://img.shields.io/badge/Status-Active-brightgreen.svg)]()
+
+A retro terminal-style SQL interface for querying the BlueSky social network. Experience social media through the lens of structured query language with authentic CRT visual effects.
 
 ## Features
-- Allows bluesky login to use api endpoints that require auth
-- Uses public API endpoints where possible to allow for use without logging in
-- Displays images in the form of ascii art
-- Provides error messages for malformed SQL statements
 
-## Usage
+- **Dual Authentication**: Full BlueSky login or anonymous "stealth mode"
+- **Public API Access**: Query public content without authentication
+- **ASCII Art Images**: View embedded images as beautiful ASCII art
+- **Real-time Validation**: Live SQL syntax checking as you type
+- **Retro CRT Interface**: Authentic 1980s terminal experience with visual effects
+- **Fast Performance**: Optimized queries with pagination support
+- **Easter Eggs**: Hidden surprises for the adventurous
 
-### How to run
-1. In the project folder run
-```python
+## Quick Start
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone git@github.com:A5rocks/code-jam-12.git
+
+   # move to the dir
+   cd code-jam-12
+   ```
+2. Install dependencies:
+  ```bash
 pip install -r requirements.txt
-```
-2. Once the dependencies are installed run the following command to start the server
-```cmd
-cd src && python -m http.server
-```
-3. Open the address displayed in the command prompt to view the website
+  ```
+3. Start the development server:
+   ```bash
+   python dev.py
+   ```
 
-### Useful Fields
-You can use * in place of selecting fields to view all fields returned from the API, but here are a few useful ones:
-|Post fields|User fields (following/followers tables)|
-|--------|-----------|
-|post_author_displayName|handle|
-|post_record_text|displayName|
-|post_likeCount|avatar|
-|post_images|description|
-|post_replyCount|
+3. Open your browser to [http://localhost:8000](http://localhost:8000)
 
-  
+### First Steps
+
+1. **Choose Authentication Mode**:
+   - **Authenticated**: Login with BlueSky credentials for full access
+   - **Stealth Mode**: Browse public content anonymously
+
+2. **Try Your First Query**:
+   ```sql
+   SELECT * FROM tables
+   ```
+
+3. **Explore Public Profiles**:
+   ```sql
+   SELECT * FROM profile WHERE actor = 'bsky.app'
+   ```
+
+## Query Reference
+
+### Available Tables
+
+| Table | Description | Auth Required | Parameters |
+|-------|-------------|---------------|------------|
+| `tables` | List all available tables | No | None |
+| `profile` | User profile information | No | `actor` (optional) |
+| `feed` | Posts from a specific user | No | `author` (required) |
+| `timeline` | Your personal timeline | Yes | None |
+| `suggestions` | Suggested users to follow | No | None |
+| `suggested_feed` | Recommended feeds | No | None |
+| `followers` | User's followers | No | `actor` (required) |
+| `following` | Who user follows | No | `actor` (required) |
+| `mutuals` | Mutual connections | No | `actor` (required) |
+| `likes` | User's liked posts | Yes | `actor` (required) |
+
 ### Example Queries
 
 ```sql
@@ -54,13 +94,10 @@ SELECT * FROM tables
 ```
 - This will get all available table names
 
-### Available Tables
-1. feed
-2. timeline
-3. profile
-4. suggestions
-5. suggested_feed
-6. likes
-7. followers
-8. following
-9. mutuals
+## License
+
+This project is licensed under the MIT License - see the [LICENSE.txt](LICENSE.txt) file for details.
+
+---
+
+**1987 Iridescent Ivies** - *Experience social media like it's 1987!*
