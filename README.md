@@ -28,16 +28,12 @@ A retro terminal-style SQL interface for querying the BlueSky social network. Ex
    # move to the dir
    cd code-jam-12
    ```
-2. Install dependencies:
-  ```bash
-pip install -r requirements.txt
-  ```
-3. Start the development server:
+2. Start the development server:
    ```bash
    python dev.py
    ```
 
-3. Open your browser to [http://localhost:8000](http://localhost:8000)
+3. That's it! Open your browser to: [http://localhost:8000](http://localhost:8000)
 
 ### First Steps
 
