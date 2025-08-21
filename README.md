@@ -30,7 +30,7 @@ A retro terminal-style SQL interface for querying the BlueSky social network. Ex
    ```
 2. Start the development server:
    ```bash
-   python dev.py
+   python3 dev.py
    ```
 
 3. That's it! Open your browser to: [http://localhost:8000](http://localhost:8000)
