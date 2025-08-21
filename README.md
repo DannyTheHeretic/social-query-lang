@@ -76,11 +76,6 @@ SELECT * FROM feed WHERE author='tess.bsky.social'
 - This will get all fields from all posts from the author's feed
 
 ```sql
-SELECT post_author_displayName, post_record_text FROM likes WHERE author='tess.bsky.social'
-```
-- This will get only the selected fields from all posts from the author's likes
-
-```sql
 SELECT description FROM followers WHERE author='tess.bsky.social'
 ```
 - This will get the bio of all followers of the author
@@ -90,10 +85,20 @@ SELECT * FROM tables
 ```
 - This will get all available table names
 
+## Team - Iridescent Ivies
+
+- **A5rocks** - [GitHub](https://github.com/A5rocks) (Team Leader)
+- **TheHeretic** - [GitHub](https://github.com/DannyTheHeretic)
+- **Joshdtbx** - [GitHub](https://github.com/giplgwm)
+- **Walkercito** - [GitHub](https://github.com/Walkercito)
+- **Mimic** - [GitHub](https://github.com/Drakariboo)
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.txt](LICENSE.txt) file for details.
 
 ---
 
-**1987 Iridescent Ivies** - *Experience social media like it's 1987!*
+**Thank you for exploring SQL-BSky!** 
+
+*Experience social media like it's 1987 with the Iridescent Ivies team!*
