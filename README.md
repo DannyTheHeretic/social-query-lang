@@ -94,10 +94,6 @@ SELECT * FROM tables
 > [!WARNING]  
 > Please be aware of these current limitations before using the application.
 
-### Table `likes` Not Functional
-> [!CAUTION]
-> The `likes` table is currently broken and behaves like a non-existent table.
-
 > [!NOTE]  
 > Queries to non-existent tables or fields will return empty rows instead of proper error messages.
 
@@ -112,6 +108,9 @@ SELECT apples FROM feed WHERE author = "tess.bsky.social"
 > [!IMPORTANT]  
 > There's a known KeyError where the system looks for `"feeds"` but should be looking for `"feed"`. This is a human error we discovered after the Code Jam programming time had ended, so we weren't able to fix it, but we're aware of the issue and it may cause some feed-related queries to fail unexpectedly.
 
+##### Table `likes` Not Functional
+> [!CAUTION]
+> The `likes` table is currently broken and behaves like a non-existent table. This is due to the KeyError
 ## Team - Iridescent Ivies
 
 - **A5rocks** - [GitHub](https://github.com/A5rocks) (Team Leader)
