@@ -7,6 +7,8 @@
 
 A retro terminal-style SQL interface for querying the BlueSky social network. Experience social media through the lens of structured query language with authentic CRT visual effects.
 
+![App Initialization](assets/Init_sql_app.gif)
+
 ## Features
 
 - **Dual Authentication**: Full BlueSky login or anonymous "stealth mode"
@@ -45,6 +47,8 @@ A retro terminal-style SQL interface for querying the BlueSky social network. Ex
    ```sql
    SELECT * FROM tables
    ```
+   
+   ![Running Test Query](assets/run_test_query.gif)
 
 3. **Explore Public Profiles**:
    ```sql
@@ -85,12 +89,35 @@ SELECT * FROM tables
 ```
 - This will get all available table names
 
+## Known Issues
+
+> [!WARNING]  
+> Please be aware of these current limitations before using the application.
+
+### Table `likes` Not Functional
+> [!CAUTION]
+> The `likes` table is currently broken and behaves like a non-existent table.
+
+> [!NOTE]  
+> Queries to non-existent tables or fields will return empty rows instead of proper error messages.
+
+**Example:**
+```sql
+-- Both of these return empty rows (same behavior)
+SELECT likes FROM feed WHERE author = "tess.bsky.social"
+SELECT apples FROM feed WHERE author = "tess.bsky.social"
+```
+
+### KeyError in Feed Processing  
+> [!IMPORTANT]  
+> There's a known KeyError where the system looks for `"feeds"` but should be looking for `"feed"`. This is a human error we discovered after the Code Jam programming time had ended, so we weren't able to fix it, but we're aware of the issue and it may cause some feed-related queries to fail unexpectedly.
+
 ## Team - Iridescent Ivies
 
 - **A5rocks** - [GitHub](https://github.com/A5rocks) (Team Leader)
 - **TheHeretic** - [GitHub](https://github.com/DannyTheHeretic)
-- **Joshdtbx** - [GitHub](https://github.com/giplgwm)
 - **Walkercito** - [GitHub](https://github.com/Walkercito)
+- **Joshdtbx** - [GitHub](https://github.com/giplgwm)
 - **Mimic** - [GitHub](https://github.com/Drakariboo)
 
 ## License
@@ -99,6 +126,4 @@ This project is licensed under the MIT License - see the [LICENSE.txt](LICENSE.t
 
 ---
 
-**Thank you for exploring SQL-BSky!** 
-
-*Experience social media like it's 1987 with the Iridescent Ivies team!*
+**Thank you for exploring our project!!**
