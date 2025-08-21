@@ -14,7 +14,7 @@ A retro terminal-style SQL interface for querying the BlueSky social network. Ex
 - **ASCII Art Images**: View embedded images as beautiful ASCII art
 - **Real-time Validation**: Live SQL syntax checking as you type
 - **Retro CRT Interface**: Authentic 1980s terminal experience with visual effects
-- **Fast Performance**: Optimized queries with pagination support
+- **Fast Performance**: Optimized queries with scrolling support
 - **Easter Eggs**: Hidden surprises for the adventurous
 
 ## Quick Start
