@@ -106,7 +106,7 @@ SELECT apples FROM feed WHERE author = "tess.bsky.social"
 
 ### KeyError in Feed Processing  
 > [!IMPORTANT]  
-> There's a known KeyError where the system looks for `"feeds"` but should be looking for `"feed"`. This is a human error we discovered after the Code Jam programming time had ended, so we weren't able to fix it, but we're aware of the issue and it may cause some feed-related queries to fail unexpectedly.
+> There's a known KeyError where the system looks for `"feeds"` but should be looking for `"feed"`. This is a human error we discovered after the Code Jam programming time had ended, so we weren't able to fix it, but we're aware of the issue and it may cause some like-table-related queries to fail unexpectedly.
 
 ##### Table `likes` Not Functional
 > [!CAUTION]
