@@ -43,6 +43,9 @@ A retro terminal-style SQL interface for querying the BlueSky social network. Ex
    - **Authenticated**: Login with BlueSky credentials for full access
    - **Stealth Mode**: Browse public content anonymously
 
+   > [!NOTE]
+   > If the page is slow, try disabling the CRT effect at this point.
+
 2. **Try Your First Query**:
    ```sql
    SELECT * FROM tables
@@ -75,12 +78,12 @@ A retro terminal-style SQL interface for querying the BlueSky social network. Ex
 ### Example Queries
 
 ```sql
-SELECT * FROM feed WHERE author='tess.bsky.social'
+SELECT * FROM feed WHERE author='bsky.app'
 ```
 - This will get all fields from all posts from the author's feed
 
 ```sql
-SELECT description FROM followers WHERE author='tess.bsky.social'
+SELECT description FROM followers WHERE author='bsky.app'
 ```
 - This will get the bio of all followers of the author
 
@@ -100,8 +103,8 @@ SELECT * FROM tables
 **Example:**
 ```sql
 -- Both of these return empty rows (same behavior)
-SELECT likes FROM feed WHERE author = "tess.bsky.social"
-SELECT apples FROM feed WHERE author = "tess.bsky.social"
+SELECT likes FROM feed WHERE author = "bsky.app"
+SELECT apples FROM feed WHERE author = "bsky.app"
 ```
 
 ### KeyError in Feed Processing  
