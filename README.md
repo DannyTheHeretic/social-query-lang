@@ -43,8 +43,8 @@ A retro terminal-style SQL interface for querying the BlueSky social network. Ex
    - **Authenticated**: Login with BlueSky credentials for full access
    - **Stealth Mode**: Browse public content anonymously
 
-   > [!NOTE]
-   > If the page is slow, try disabling the CRT effect at this point.
+> [!NOTE]
+> If the page is slow, try disabling the CRT effect at this point.
 
 2. **Try Your First Query**:
    ```sql
