@@ -47,7 +47,7 @@ A retro terminal-style SQL interface for querying the BlueSky social network. Ex
    ```sql
    SELECT * FROM tables
    ```
-   
+
    ![Running Test Query](assets/run_test_query.gif)
 
 3. **Explore Public Profiles**:
